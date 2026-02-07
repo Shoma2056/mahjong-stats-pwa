@@ -1,0 +1,122 @@
+/* ======================================================================
+ * index.css（アプリ全体のグローバルスタイル）
+ * 役割：
+ * - ブラウザ全体に影響する「土台」のCSS
+ * - フォント、色、背景、基本UI（a / button / body など）を定義
+ * - App.css よりもさらに下層（グローバル）に位置する
+ * ====================================================================== */
+
+
+/* ----------------------------------------------------------------------
+ * :root
+ * - CSS変数や全体共通の基本設定
+ * - フォント / 文字描画 / ダークモードの基準
+ * ---------------------------------------------------------------------- */
+:root {
+  /* フォント系（OS標準を優先） */
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  /* ダークモードを基本にする */
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  /* 文字表示の品質向上 */
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* ----------------------------------------------------------------------
+ * a（リンク）
+ * - 色とホバー時の色のみ定義
+ * ---------------------------------------------------------------------- */
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+
+/* ----------------------------------------------------------------------
+ * body
+ * - 画面全体のレイアウト基準
+ * - min-height: 100vh により画面いっぱいに広げる
+ * - place-items: center は初期テンプレ由来（中央寄せ）
+ * ---------------------------------------------------------------------- */
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;   /* スマホ最小幅対策 */
+  min-height: 100vh;  /* 画面高いっぱい */
+}
+
+
+/* ----------------------------------------------------------------------
+ * h1
+ * - 見出し1の基本サイズ
+ * - Home画面などで使用
+ * ---------------------------------------------------------------------- */
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+
+/* ----------------------------------------------------------------------
+ * button
+ * - すべてのボタンのベーススタイル
+ * - .btn / .primary などのクラスは上書き用（別CSS想定）
+ * ---------------------------------------------------------------------- */
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+
+  background-color: #1a1a1a;
+  cursor: pointer;
+
+  transition: border-color 0.25s;
+}
+
+/* ボタン hover */
+button:hover {
+  border-color: #646cff;
+}
+
+/* フォーカス時（キーボード操作対応） */
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+
+/* ----------------------------------------------------------------------
+ * ライトモード対応
+ * - OS設定が light の場合に上書きされる
+ * ---------------------------------------------------------------------- */
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+
+  a:hover {
+    color: #747bff;
+  }
+
+  button {
+    background-color: #f9f9f9;
+  }
+}
