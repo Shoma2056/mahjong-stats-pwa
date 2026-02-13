@@ -105,8 +105,8 @@ export default function App() {
       id: uid("match"),
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      seats: seats.ids,          // 3麻は [E,S,W,""]
-      seatNames: seats.names,    // 3麻は [..,"欠け"]
+      seats: seats.ids, // 3麻は [E,S,W,""]
+      seatNames: seats.names, // 3麻は [..,"欠け"]
       kichyaSeat: 0,
       initialScores: [...initScores],
       logs: [],
@@ -165,6 +165,23 @@ export default function App() {
     setRoute({ name: "home" });
   }
 
+  // ★④対策：ホームから「開く」で直前のゲームに復帰する
+  function getResumeRoute(s: Session): Route {
+    const games = s.games ?? [];
+    if (games.length === 0) return { name: "seatSelect", sessionId: s.id };
+
+    // 最後に更新されたゲームを優先して再開
+    const last = games
+      .slice()
+      .sort((a, b) => (b.updatedAt ?? b.createdAt ?? 0) - (a.updatedAt ?? a.createdAt ?? 0))[0];
+
+    if (!last) return { name: "seatSelect", sessionId: s.id };
+
+    return last.ended
+      ? { name: "end", sessionId: s.id, matchId: last.id }
+      : { name: "match", sessionId: s.id, matchId: last.id };
+  }
+
   const matchesForStats = useMemo(() => sessions.flatMap((s) => s.games ?? []), [sessions]);
 
   return (
@@ -175,7 +192,11 @@ export default function App() {
           sessions={sessions}
           onPlayers={() => nav({ name: "players" })}
           onNewSession={() => nav({ name: "newSession" })}
-          onOpenSession={(id) => nav({ name: "seatSelect", sessionId: id })}
+          onOpenSession={(id) => {
+            const s = sessions.find((x) => x.id === id);
+            if (!s) return;
+            nav(getResumeRoute(s));
+          }}
           onDeleteSession={(id) => removeSession(id)}
           onStats={() => nav({ name: "stats" })}
         />
@@ -186,7 +207,12 @@ export default function App() {
       )}
 
       {route.name === "newSession" && (
-        <NewMatchPage mode="newSession" players={players} onBack={() => nav({ name: "home" })} onCreateSession={createSession} />
+        <NewMatchPage
+          mode="newSession"
+          players={players}
+          onBack={() => nav({ name: "home" })}
+          onCreateSession={createSession}
+        />
       )}
 
       {route.name === "seatSelect" && activeSession && (
@@ -224,7 +250,9 @@ export default function App() {
         />
       )}
 
-      {route.name === "stats" && <StatsPage matches={matchesForStats} players={players} onBack={() => nav({ name: "home" })} />}
+      {route.name === "stats" && (
+        <StatsPage matches={matchesForStats} players={players} onBack={() => nav({ name: "home" })} />
+      )}
     </div>
   );
 }

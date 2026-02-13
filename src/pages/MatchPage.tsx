@@ -1,11 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import type { AdjustmentLog, KyokuAction, KyokuResult, Match, Player, WindSeat } from "../types";
-import {
-  computeNextFromInput,
-  uid,
-  roundLabel,
-  applyAdjustmentsToScores,
-} from "../logic/mahjong";
+import { computeNextFromInput, uid, roundLabel, applyAdjustmentsToScores } from "../logic/mahjong";
 
 const windNames = ["東", "南", "西", "北"] as const;
 
@@ -15,12 +10,6 @@ function presetPoints(): number[] {
   return [1000, 2000, 3000, 4000, 6000, 8000, 12000, 16000, 24000, 32000];
 }
 
-// ------------------------------------------------------------
-// GameMode / 参加席 / 欠け席
-// - yonma:        4人全員
-// - sanma:        東南西のみ参加、北は常に欠け
-// - yonma_sanma4: 親から見た北が欠け（親が回れば欠けも回る）
-// ------------------------------------------------------------
 function getGameMode(match: Match): "yonma" | "sanma" | "yonma_sanma4" {
   const r = (match as any).rules as any;
   return (r?.gameMode ?? "yonma") as any;
@@ -30,7 +19,6 @@ function activeSeats(match: Match, dealer: WindSeat): WindSeat[] {
   const gm = getGameMode(match);
   if (gm === "yonma") return [0, 1, 2, 3] as WindSeat[];
   if (gm === "sanma") return [0, 1, 2] as WindSeat[];
-  // yonma_sanma4
   return [dealer, ((dealer + 1) % 4) as WindSeat, ((dealer + 2) % 4) as WindSeat];
 }
 
@@ -38,7 +26,6 @@ function absentSeat(match: Match, dealer: WindSeat): WindSeat | null {
   const gm = getGameMode(match);
   if (gm === "yonma") return null;
   if (gm === "sanma") return 3;
-  // yonma_sanma4
   return ((dealer + 3) % 4) as WindSeat;
 }
 
@@ -63,22 +50,17 @@ export default function MatchPage(props: {
   const seatDisplayNames = useMemo(() => {
     return ([0, 1, 2, 3] as WindSeat[]).map((seat) => {
       const pid = m.seats?.[seat];
-      // 3麻の北は pid="" のことがあるので「欠け」
       if (!pid) return seat === 3 && gm !== "yonma" ? "欠け" : (m.seatNames?.[seat] ?? `P${seat + 1}`);
       return props.players.find((p) => p.id === pid)?.name ?? m.seatNames?.[seat] ?? pid;
     });
   }, [m.seats, m.seatNames, props.players, gm]);
 
-  // ------------------------------------------------------------
-  // 入力状態
-  // ------------------------------------------------------------
   const [furo, setFuro] = useState<number[]>([0, 0, 0, 0]);
   const [riichiOn, setRiichiOn] = useState<boolean[]>([false, false, false, false]);
   const [orderState, setOrderState] = useState<number[]>([0, 0, 0, 0]);
 
   const [tab, setTab] = useState<Tab>("tsumo");
 
-  // winner/loser は参加席から選ぶ
   const [winner, setWinner] = useState<WindSeat>(act[0] ?? 0);
   const [loser, setLoser] = useState<WindSeat>(act[1] ?? act[0] ?? 0);
 
@@ -87,7 +69,6 @@ export default function MatchPage(props: {
   const [oyaPay, setOyaPay] = useState<string>("");
   const [ronPay, setRonPay] = useState<string>("");
 
-  // ★裏ドラ枚数（立直和了時のみ）
   const [uraCount, setUraCount] = useState<string>("");
 
   const [tenpai, setTenpai] = useState<boolean[]>([false, false, false, false]);
@@ -96,13 +77,11 @@ export default function MatchPage(props: {
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [showAdjust, setShowAdjust] = useState(false);
 
-  // dealer が変わると参加席が変わる（4人3麻）ので、winner/loser を追随
   useEffect(() => {
     const a = activeSeats(m, m.currentDealer);
     if (!a.includes(winner)) setWinner(a[0] ?? 0);
     if (!a.includes(loser) || loser === winner) setLoser(a.find((s) => s !== winner) ?? a[0] ?? 0);
 
-    // 欠けはテンパイ不可
     const nextTenpai = [...tenpai];
     for (let s = 0 as WindSeat; s <= 3; s = ((s + 1) % 4) as WindSeat) {
       if (!isActive(m, m.currentDealer, s)) nextTenpai[s] = false;
@@ -112,12 +91,9 @@ export default function MatchPage(props: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [m.currentDealer, gm]);
 
-  // ------------------------------------------------------------
-  // 調整込みスコア
-  // ------------------------------------------------------------
   const scoresWithAdj = useMemo(() => {
-    return applyAdjustmentsToScores(m.currentScores, m.adjustments, m.logs.length);
-  }, [m.currentScores, m.adjustments, m.logs.length]);
+    return applyAdjustmentsToScores(m.currentScores, m.adjustments ?? [], (m.logs ?? []).length);
+  }, [m.currentScores, m.adjustments, m.logs]);
 
   function currentHeader() {
     return `${roundLabel(m.currentRound)} / 親:${windNames[m.currentDealer]}`;
@@ -160,7 +136,6 @@ export default function MatchPage(props: {
   function canConfirm(): boolean {
     if (m.ended && editIndex === null) return false;
 
-    // winner/loser が欠けなら不可
     if (!act.includes(winner)) return false;
     if (tab === "ron" && (!act.includes(loser) || winner === loser)) return false;
 
@@ -176,7 +151,6 @@ export default function MatchPage(props: {
   }
 
   function buildResult(action: KyokuAction): KyokuResult {
-    // 裏ドラ：立直和了時のみ付与
     const u = uraCount.trim() === "" ? undefined : Number(uraCount);
     const uSafe = Number.isFinite(u as any) && (u as number) >= 0 && Number.isInteger(u as number) ? (u as number) : undefined;
 
@@ -235,14 +209,13 @@ export default function MatchPage(props: {
     if (updatedMatch.ended) props.onEnd();
   }
 
-  // ------------------------------------------------------------
-  // 履歴編集
-  // ------------------------------------------------------------
   function openEdit(i: number) {
     setEditIndex(i);
     setShowHistory(false);
 
-    const log = m.logs[i];
+    const log = (m.logs ?? [])[i];
+    if (!log) return;
+
     setFuro([...log.action.furoCount]);
 
     const nextOn = log.action.riichiOrder.map((x) => x > 0);
@@ -283,7 +256,8 @@ export default function MatchPage(props: {
     const action = buildAction();
     const result = buildResult(action);
 
-    const logs = [...m.logs];
+    const logs = [...(m.logs ?? [])];
+    if (!logs[editIndex]) return;
     logs[editIndex] = { ...logs[editIndex], action, result };
 
     const updated = props.onRecompute({ ...m, logs, ended: false, endReason: undefined });
@@ -299,9 +273,6 @@ export default function MatchPage(props: {
     resetInputs();
   }
 
-  // ------------------------------------------------------------
-  // 点数修正
-  // ------------------------------------------------------------
   const [adjSeat, setAdjSeat] = useState<WindSeat>(0);
   const [adjDelta, setAdjDelta] = useState<string>("");
   const [adjReason, setAdjReason] = useState<string>("");
@@ -313,16 +284,15 @@ export default function MatchPage(props: {
     const a: AdjustmentLog = {
       id: uid("adj"),
       createdAt: Date.now(),
-      afterKyokuIndex: m.logs.length,
+      afterKyokuIndex: (m.logs ?? []).length,
       seat: adjSeat,
       delta,
       reason: adjReason.trim() || undefined,
     };
 
-    const updated: Match = { ...m, adjustments: [...m.adjustments, a], updatedAt: Date.now() };
+    const updated: Match = { ...m, adjustments: [...(m.adjustments ?? []), a], updatedAt: Date.now() };
 
-    // 飛び判定（調整後点数が大事）
-    const scoresAdj = applyAdjustmentsToScores(updated.currentScores, updated.adjustments, updated.logs.length);
+    const scoresAdj = applyAdjustmentsToScores(updated.currentScores, updated.adjustments ?? [], (updated.logs ?? []).length);
     if (scoresAdj.some((s) => s <= 0)) {
       updated.ended = true;
       updated.endReason = "飛び終了（点数修正）";
@@ -369,7 +339,6 @@ export default function MatchPage(props: {
 
         <hr />
 
-        {/* 現在点 */}
         <div className="grid4">
           {([0, 1, 2, 3] as WindSeat[]).map((seat) => {
             const isAbs = abs === seat;
@@ -396,7 +365,6 @@ export default function MatchPage(props: {
 
         <hr />
 
-        {/* 局中の状態 */}
         <h3>局中の状態</h3>
         <div className="grid4">
           {([0, 1, 2, 3] as WindSeat[]).map((seat) => {
@@ -446,7 +414,6 @@ export default function MatchPage(props: {
 
         <hr />
 
-        {/* 結果入力 */}
         <h3>結果入力</h3>
         <div className="tabs">
           <div className={`tab ${tab === "tsumo" ? "active" : ""}`} onClick={() => setTab("tsumo")}>ツモ</div>
@@ -510,8 +477,16 @@ export default function MatchPage(props: {
                       key={v}
                       className="btn"
                       onClick={() => {
-                        if (winner === m.currentDealer) setOyaAll(String(v));
-                        else setKoPay(String(v));
+                        if (winner === m.currentDealer) {
+                          setOyaAll(String(v));
+                          setKoPay("");
+                          setOyaPay("");
+                        } else {
+                          // ★ ③対策：子ツモは両方埋める（とりあえず同額でセット）
+                          setKoPay(String(v));
+                          if (!oyaPay) setOyaPay(String(v));
+                          setOyaAll("");
+                        }
                       }}
                       style={{ padding: "8px 10px" }}
                     >
@@ -519,9 +494,7 @@ export default function MatchPage(props: {
                     </button>
                   ))}
                 </div>
-                <div className="small">
-                  ※3麻/4人3麻のツモは参加2人払い（欠けは払わない）。
-                </div>
+                <div className="small">※3麻/4人3麻のツモは参加2人払い（欠けは払わない）。</div>
               </div>
             </div>
           )}
@@ -541,9 +514,7 @@ export default function MatchPage(props: {
                     </button>
                   ))}
                 </div>
-                <div className="small">
-                  ※3麻系の本場は支払いに +1000×本場 上乗せ。
-                </div>
+                <div className="small">※3麻系の本場は支払いに +1000×本場 上乗せ。</div>
               </div>
             </div>
           )}
@@ -560,9 +531,7 @@ export default function MatchPage(props: {
 
           {tab === "draw" && (
             <div className="card">
-              <div style={{ fontWeight: 800, marginBottom: 8 }}>
-                テンパイ者（参加者のみ）
-              </div>
+              <div style={{ fontWeight: 800, marginBottom: 8 }}>テンパイ者（参加者のみ）</div>
               <div className="grid4">
                 {([0, 1, 2, 3] as WindSeat[]).map((seat) => {
                   const disabled = !act.includes(seat);
@@ -577,28 +546,24 @@ export default function MatchPage(props: {
                         setTenpai(next);
                       }}
                     >
-                      {windNames[seat]} {seatDisplayNames[seat]}{" "}
-                      {disabled ? "（欠け）" : tenpai[seat] ? "（テンパイ）" : "（ノーテン）"}
+                      {windNames[seat]} {seatDisplayNames[seat]} {disabled ? "（欠け）" : tenpai[seat] ? "（テンパイ）" : "（ノーテン）"}
                     </button>
                   );
                 })}
               </div>
-              <div className="small" style={{ marginTop: 8 }}>
-                ※3麻/4人3麻のノーテン罰符は参加者内で合計2000点移動。
-              </div>
+              <div className="small" style={{ marginTop: 8 }}>※3麻/4人3麻のノーテン罰符は参加者内で合計2000点移動。</div>
             </div>
           )}
         </div>
 
         <hr />
 
-        {/* 確認 */}
         <div className="card">
           <div style={{ fontWeight: 800 }}>確認サマリー</div>
           <div className="small">
             立直 {summary.riichiCnt}人（供託 +{summary.riichiCnt * 1000}）／本場 {summary.honba}／供託残 {summary.pot}
           </div>
-          {editIndex !== null && (
+          {editIndex !== null && m.logs?.[editIndex] && (
             <div className="badge info" style={{ marginTop: 8 }}>
               編集モード：{roundLabel(m.logs[editIndex].roundStart)} を修正中（この局以降は再計算）
             </div>
@@ -623,14 +588,13 @@ export default function MatchPage(props: {
         </div>
       </div>
 
-      {/* 右：直近履歴 */}
       <div className="card" style={{ flex: "1 1 360px" }}>
         <h3>局履歴（直近）</h3>
         <div className="small">任意の過去局を編集できます。</div>
         <hr />
-        {m.logs.length === 0 && <div className="small">まだ局がありません。</div>}
-        {m.logs.slice().reverse().slice(0, 12).map((log, idxRev) => {
-          const i = m.logs.length - 1 - idxRev;
+        {(m.logs ?? []).length === 0 && <div className="small">まだ局がありません。</div>}
+        {(m.logs ?? []).slice().reverse().slice(0, 12).map((log, idxRev) => {
+          const i = (m.logs ?? []).length - 1 - idxRev;
           return (
             <div key={log.id} className="card" style={{ marginBottom: 8 }}>
               <div style={{ fontWeight: 800 }}>{roundLabel(log.roundStart)}（親:{windNames[log.dealer]}）</div>
@@ -647,7 +611,6 @@ export default function MatchPage(props: {
         })}
       </div>
 
-      {/* モーダル：局履歴 */}
       {showHistory && (
         <div className="card" style={{ position: "fixed", inset: 16, overflow: "auto", zIndex: 10 }}>
           <div className="kv">
@@ -656,7 +619,7 @@ export default function MatchPage(props: {
           </div>
           <div className="small">編集すると、その局以降がすべて再計算されます。</div>
           <hr />
-          {m.logs.map((log, i) => (
+          {(m.logs ?? []).map((log, i) => (
             <div key={log.id} className="card" style={{ marginBottom: 10 }}>
               <div className="kv">
                 <div>
@@ -674,7 +637,6 @@ export default function MatchPage(props: {
         </div>
       )}
 
-      {/* モーダル：点数修正 */}
       {showAdjust && (
         <div className="card" style={{ position: "fixed", inset: 16, zIndex: 10, maxWidth: 720, margin: "0 auto" }}>
           <div className="kv">
@@ -708,13 +670,13 @@ export default function MatchPage(props: {
             <button className="btn primary" onClick={addAdjustment} disabled={!adjDelta || Number(adjDelta) === 0}>
               反映
             </button>
-            <span className="pill">反映先: 現在局の直前（afterKyokuIndex={m.logs.length}）</span>
+            <span className="pill">反映先: 現在局の直前（afterKyokuIndex={(m.logs ?? []).length}）</span>
           </div>
 
           <hr />
           <h3>修正履歴</h3>
-          {m.adjustments.length === 0 && <div className="small">まだありません。</div>}
-          {m.adjustments.slice().reverse().map((a) => (
+          {(m.adjustments ?? []).length === 0 && <div className="small">まだありません。</div>}
+          {(m.adjustments ?? []).slice().reverse().map((a) => (
             <div key={a.id} className="card" style={{ marginBottom: 8 }}>
               <div className="kv">
                 <div style={{ fontWeight: 700 }}>

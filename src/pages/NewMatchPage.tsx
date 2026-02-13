@@ -80,9 +80,9 @@ export default function NewMatchPage(props: Props) {
     return (
       <div className="card">
         <div className="kv">
-          <h2>新しい対局（ルール設定）</h2>
+          <h2>新規対局（ルール設定）</h2>
           <button className="btn" onClick={p.onBack}>
-            戻る
+            ホーム
           </button>
         </div>
 
@@ -98,14 +98,14 @@ export default function NewMatchPage(props: Props) {
           }}
         >
           <option value="yonma">4麻</option>
-          <option value="sanma">3麻（北固定欠け）</option>
-          <option value="yonma_sanma4">4人3麻（欠けが親から見た北）</option>
+          <option value="sanma">3麻</option>
+          <option value="yonma_sanma4">4人3麻</option>
         </select>
 
         <hr />
 
         <h3>参加者（{needPlayers}人）</h3>
-        <div className="small">{needPlayers}人選択してください（上限{needPlayers}人）。</div>
+        <div className="small">{needPlayers}人選択してください。</div>
         <div style={{ marginTop: 8 }}>
           {p.players.map((pl) => (
             <button
@@ -129,7 +129,7 @@ export default function NewMatchPage(props: Props) {
         <label>返し点</label>
         <input value={rules.returnPoints} onChange={(e) => setRules({ ...rules, returnPoints: Number(e.target.value) })} inputMode="numeric" />
 
-        <label>トップ取り（オカ）</label>
+        <label>トップ取り</label>
         <input value={rules.topOkaPoints} onChange={(e) => setRules({ ...rules, topOkaPoints: Number(e.target.value) })} inputMode="numeric" />
 
         <label>飛び</label>
@@ -139,7 +139,7 @@ export default function NewMatchPage(props: Props) {
           <option value="none">なし</option>
         </select>
 
-        <label>ウマ（プリセット）</label>
+        <label>順位点</label>
         <select
           value={rules.uma.presetId}
           onChange={(e) => {

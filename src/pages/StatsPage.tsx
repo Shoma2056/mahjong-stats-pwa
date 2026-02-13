@@ -1,7 +1,8 @@
-import React, { useMemo } from "react";
-import type { Match, Player, Rules, WindSeat, TobiRule, KyokuLog } from "../types";
+import React, { useMemo, useState } from "react";
+import type { Match, Player, Rules, WindSeat, TobiRule, KyokuLog, GameMode } from "../types";
 import { buildEndSummary, getRanksWithKichya } from "../logic/mahjong";
 
+// -------------------- Rules safety --------------------
 function fallbackRules(): Rules {
   return {
     gameMode: "yonma",
@@ -13,15 +14,27 @@ function fallbackRules(): Rules {
   };
 }
 
+/**
+ * match.rules が部分的/古い場合でも落ちないように、
+ * fallback をベースに shallow merge + uma も merge する
+ */
 function safeRules(match: Match): Rules {
-  return (match.rules ??
-    ({
-      ...fallbackRules(),
-      tobiRule: match.tobiRule ?? "leq0",
-    } as Rules));
+  const fb = fallbackRules();
+  const r = (match.rules ?? {}) as Partial<Rules> & { uma?: any };
+
+  const mergedUma = { ...fb.uma, ...(r.uma ?? {}) };
+
+  return {
+    ...fb,
+    ...r,
+    gameMode: ((r.gameMode ?? fb.gameMode) as GameMode) || "yonma",
+    tobiRule: (r.tobiRule ?? match.tobiRule ?? fb.tobiRule) as any,
+    uma: mergedUma as any,
+  } as Rules;
 }
 
 function seatsForRanking(rules: Rules): WindSeat[] {
+  // 3麻だけ3人。4麻/4人3麻は4人順位。
   return rules.gameMode === "sanma" ? ([0, 1, 2] as WindSeat[]) : ([0, 1, 2, 3] as WindSeat[]);
 }
 
@@ -88,7 +101,7 @@ function calcMatchPts(match: Match): { ptBySeat: number[]; rankBySeat: number[];
   return { ptBySeat, rankBySeat, tobiSeats };
 }
 
-// -------- 局スタッツ（既存の裏ドラ対応版を3麻座席に合わせる） --------
+// -------- 局スタッツ --------
 type KyokuAgg = {
   hands: number;
   wins: number;
@@ -107,16 +120,19 @@ type KyokuAgg = {
   riichiDealins: number;
 };
 
-function getGameMode(match: Match): "yonma" | "sanma" | "yonma_sanma4" {
-  const r = (match as any).rules as any;
-  return (r?.gameMode ?? "yonma") as any;
+function modeOf(match: Match): GameMode {
+  const r = (match.rules ?? {}) as any;
+  return (r.gameMode ?? "yonma") as GameMode;
 }
+
 function activeSeatsForDealer(match: Match, dealer: WindSeat): WindSeat[] {
-  const gm = getGameMode(match);
+  const gm = modeOf(match);
   if (gm === "yonma") return [0, 1, 2, 3];
   if (gm === "sanma") return [0, 1, 2];
+  // yonma_sanma4：親から見た3人参加
   return [dealer, ((dealer + 1) % 4) as WindSeat, ((dealer + 2) % 4) as WindSeat];
 }
+
 function isActiveSeat(match: Match, dealer: WindSeat, seat: WindSeat): boolean {
   return activeSeatsForDealer(match, dealer).includes(seat);
 }
@@ -125,11 +141,10 @@ function incomeWithoutHonbaAndPot(match: Match, log: KyokuLog): number | null {
   if (log.result.type === "ron") return log.result.points.ron;
 
   if (log.result.type === "tsumo") {
-    const dealer = log.dealer;
-    const gm = getGameMode(match);
+    const gm = modeOf(match);
 
     if (log.result.points.kind === "oya_all") {
-      const payers = gm === "yonma" ? 3 : 2; // 3麻系は参加2人
+      const payers = gm === "yonma" ? 3 : 2; // 3麻系は参加2人払い
       return log.result.points.all * payers;
     }
 
@@ -170,11 +185,28 @@ type RowKyoku = {
   riichiDealinRate: number;
 };
 
+type ModeFilter = "all" | "yonma" | "sanma" | "yonma_sanma4";
+
+function modeLabel(m: ModeFilter): string {
+  if (m === "all") return "全部";
+  if (m === "yonma") return "4麻";
+  if (m === "sanma") return "3麻";
+  return "4人3麻";
+}
+
 export default function StatsPage(props: { matches: Match[]; players: Player[]; onBack: () => void }) {
+  const [mode, setMode] = useState<ModeFilter>("all");
+
   const nameOf = (pid: string) => props.players.find((p) => p.id === pid)?.name ?? pid;
 
-  const { rowsMatch, rowsKyoku } = useMemo(() => {
+  const filteredMatches = useMemo(() => {
     const ms = props.matches ?? [];
+    if (mode === "all") return ms;
+    return ms.filter((m) => modeOf(m) === mode);
+  }, [props.matches, mode]);
+
+  const { rowsMatch, rowsKyoku, meta } = useMemo(() => {
+    const ms = filteredMatches ?? [];
     const endedMatches = ms.filter((m) => (m.logs?.length ?? 0) > 0);
 
     // ---- Match集計 ----
@@ -326,18 +358,45 @@ export default function StatsPage(props: { matches: Match[]; players: Player[]; 
 
     rowsKyoku.sort((x, y) => (y.hands !== x.hands ? y.hands - x.hands : x.name.localeCompare(y.name)));
 
-    return { rowsMatch, rowsKyoku };
-  }, [props.matches, props.players]);
+    return {
+      rowsMatch,
+      rowsKyoku,
+      meta: {
+        totalMatches: ms.length,
+        countedMatches: endedMatches.length,
+      },
+    };
+  }, [filteredMatches, props.players]);
 
   return (
     <div className="card">
       <div className="kv">
-        <h2>スタッツ</h2>
+        <div>
+          <h2>スタッツ</h2>
+          <div className="small" style={{ marginTop: 6 }}>
+            集計対象：{modeLabel(mode)}（{meta.countedMatches}/{meta.totalMatches} match：※logsがあるものだけ集計）
+          </div>
+        </div>
         <button className="btn" onClick={props.onBack}>戻る</button>
       </div>
 
-      <div className="small" style={{ marginTop: 6 }}>
-        ※ptは「2位以下は切り上げ、1位は合計0になる残差」です（3麻は3人、4麻は4人で合計0）。
+      <hr />
+
+      {/* モード切替 */}
+      <div className="tabs" style={{ marginBottom: 10 }}>
+        {(["all", "yonma", "sanma", "yonma_sanma4"] as ModeFilter[]).map((m) => (
+          <div
+            key={m}
+            className={`tab ${mode === m ? "active" : ""}`}
+            onClick={() => setMode(m)}
+          >
+            {modeLabel(m)}
+          </div>
+        ))}
+      </div>
+
+      <div className="small">
+        ※ptは「2位以下は切り上げ、1位は合計0になる残差」です（3麻は3人、4麻/4人3麻は4人で合計0）。
       </div>
 
       <hr />

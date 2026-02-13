@@ -1,135 +1,147 @@
 /* ======================================================================
- * styles.css（共通UI / テーマスタイル）
- * 役割：
- * - アプリ全体で使う共通UIクラスを定義
- * - 色・背景・ボタン・カード・グリッドなど「見た目の本体」
- * - index.css / App.css の上に重ねる“デザイン層”
+ * styles.css（共通UI / テーマスタイル + スマホ最適化）
  * ====================================================================== */
 
-
-/* ----------------------------------------------------------------------
- * :root（テーマ変数）
- * - ダークテーマ前提
- * - 色は CSS変数として集中管理（後で卓色変更しやすい）
- * ---------------------------------------------------------------------- */
 :root {
-  color-scheme: dark;
-
-  /* 背景・カード */
-  --bg: #0b1220;        /* 画面全体の背景 */
-  --card: #121a2b;      /* カード背景 */
-
-  /* テキスト */
-  --text: #e8eefc;      /* 通常文字 */
-  --muted: #93a4bf;     /* 補助文字（small / label） */
-
-  /* ステータス色 */
-  --accent: #60a5fa;    /* メインアクセント */
-  --danger: #fb7185;    /* 危険・削除 */
-  --ok: #34d399;        /* 成功・OK */
-
-  /* フォント（日本語含む） */
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI",
     Roboto, "Noto Sans JP", "Hiragino Sans", "Helvetica Neue", Arial;
+
+  color-scheme: dark;
+
+  --bg: #0b1220;
+  --card: #121a2b;
+
+  --text: #e8eefc;
+  --muted: #93a4bf;
+
+  --line: rgba(255,255,255,.10);
+  --card-line: rgba(255,255,255,.08);
+  --shadow: 0 10px 24px rgba(0,0,0,.35);
+
+  --accent: #60a5fa;
+  --danger: #fb7185;
+  --ok: #34d399;
+
+  --btn-bg: rgba(255,255,255,.06);
+  --btn-line: rgba(255,255,255,.14);
+  --btn-hover: rgba(255,255,255,.10);
+
+  --primary-bg: rgba(96,165,250,.22);
+  --primary-line: rgba(96,165,250,.35);
+
+  --danger-bg: rgba(251,113,133,.18);
+  --danger-line: rgba(251,113,133,.35);
+
+  --field-bg: rgba(0,0,0,.18);
+  --field-line: rgba(255,255,255,.14);
 }
 
+/* Home専用：明るい卓テーマ（そのまま） */
+.themeFelt {
+  color-scheme: light;
+  --bg: transparent;
+  --card: rgba(10, 20, 35, 0.82);
+  --text: rgba(255,255,255,0.92);
+  --muted: rgba(255,255,255,0.70);
+  --line: rgba(255,255,255,.14);
+  --card-line: rgba(255,255,255,.14);
+  --shadow: 0 14px 34px rgba(0,0,0,.28);
+  --accent: #14b8a6;
 
-/* ----------------------------------------------------------------------
- * body / a
- * - 全体背景とリンク色
- * ---------------------------------------------------------------------- */
+  --primary-bg: rgba(20,184,166,.22);
+  --primary-line: rgba(20,184,166,.40);
+
+  --btn-bg: rgba(255,255,255,.08);
+  --btn-line: rgba(255,255,255,.18);
+  --btn-hover: rgba(255,255,255,.12);
+
+  --field-bg: rgba(0,0,0,.20);
+  --field-line: rgba(255,255,255,.20);
+}
+
+/* 全体 */
 body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
 }
 
-a {
-  color: var(--accent);
-}
+a { color: var(--accent); }
 
-
-/* ----------------------------------------------------------------------
- * レイアウト系
- * ---------------------------------------------------------------------- */
+/* コンテナ：全ページの余白基準（スマホ優先） */
 .container {
   max-width: 980px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 12px;
 }
 
+/* 横並び */
 .row {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  align-items: stretch;
 }
 
-
-/* ----------------------------------------------------------------------
- * カードUI（最重要）
- * - ほぼ全ページで使用
- * ---------------------------------------------------------------------- */
+/* カード */
 .card {
   background: var(--card);
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 14px;
+  border: 1px solid var(--card-line);
+  border-radius: 16px;
   padding: 12px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(6px);
 }
 
-
-/* ----------------------------------------------------------------------
- * ボタン
- * - .btn を基準に .primary / .danger を重ねる
- * ---------------------------------------------------------------------- */
+/* ボタン */
 .btn {
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.06);
+  border: 1px solid var(--btn-line);
+  background: var(--btn-bg);
   color: var(--text);
   padding: 10px 12px;
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
+  transition: transform .12s ease, background-color .12s ease, border-color .12s ease;
+}
+
+.btn:hover {
+  background: var(--btn-hover);
+  transform: translateY(-1px);
 }
 
 .btn.primary {
-  background: rgba(96,165,250,.22);
-  border-color: rgba(96,165,250,.35);
+  background: var(--primary-bg);
+  border-color: var(--primary-line);
 }
 
 .btn.danger {
-  background: rgba(251,113,133,.18);
-  border-color: rgba(251,113,133,.35);
+  background: var(--danger-bg);
+  border-color: var(--danger-line);
 }
 
 .btn:disabled {
   opacity: .45;
   cursor: not-allowed;
+  transform: none;
 }
 
-
-/* ----------------------------------------------------------------------
- * pill（補助ラベル）
- * - 条件未達成・注意書きなどに使用
- * ---------------------------------------------------------------------- */
+/* pill */
 .pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 4px 8px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.06);
+  border: 1px solid var(--btn-line);
+  background: var(--btn-bg);
   color: var(--muted);
   font-size: 12px;
 }
 
+/* 見出し */
+h1, h2, h3 { margin: 0 0 10px 0; }
 
-/* ----------------------------------------------------------------------
- * 見出し・フォーム
- * ---------------------------------------------------------------------- */
-h1, h2, h3 {
-  margin: 0 0 10px 0;
-}
-
+/* フォーム */
 label {
   display: block;
   font-size: 12px;
@@ -137,24 +149,20 @@ label {
   margin-bottom: 6px;
 }
 
-input,
-select {
+input, select {
   width: 100%;
   padding: 10px 10px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(0,0,0,.18);
+  border: 1px solid var(--field-line);
+  background: var(--field-bg);
   color: var(--text);
   outline: none;
 }
 
-
-/* ----------------------------------------------------------------------
- * 区切り・補助テキスト
- * ---------------------------------------------------------------------- */
+/* 区切り・補助 */
 hr {
   border: none;
-  border-top: 1px solid rgba(255,255,255,.10);
+  border-top: 1px solid var(--line);
   margin: 10px 0;
 }
 
@@ -163,28 +171,17 @@ hr {
   color: var(--muted);
 }
 
-
-/* ----------------------------------------------------------------------
- * グリッド（4人表示用）
- * - 820px 以下では2列に落とす（スマホ対応）
- * ---------------------------------------------------------------------- */
+/* grid4 */
 .grid4 {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
 }
-
 @media (max-width: 820px) {
-  .grid4 {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  .grid4 { grid-template-columns: repeat(2, 1fr); }
 }
 
-
-/* ----------------------------------------------------------------------
- * kv（Key-Value 行）
- * - 見出し＋ボタンなど左右配置
- * ---------------------------------------------------------------------- */
+/* kv */
 .kv {
   display: flex;
   align-items: center;
@@ -192,70 +189,82 @@ hr {
   gap: 10px;
 }
 
-
-/* ----------------------------------------------------------------------
- * badge（状態表示）
- * ---------------------------------------------------------------------- */
+/* badge */
 .badge {
   font-size: 12px;
   padding: 3px 8px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.06);
+  border: 1px solid var(--btn-line);
+  background: var(--btn-bg);
 }
-
 .badge.ok {
   border-color: rgba(52,211,153,.35);
   background: rgba(52,211,153,.12);
 }
-
 .badge.danger {
   border-color: rgba(251,113,133,.35);
   background: rgba(251,113,133,.12);
 }
-
 .badge.info {
   border-color: rgba(96,165,250,.35);
   background: rgba(96,165,250,.12);
 }
 
-
-/* ----------------------------------------------------------------------
- * タブUI（ツモ / ロン / 流局 など）
- * ---------------------------------------------------------------------- */
-.tabs {
-  display: flex;
-  gap: 8px;
-}
-
+/* tabs */
+.tabs { display: flex; gap: 8px; }
 .tab {
   flex: 1;
   text-align: center;
   padding: 10px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.06);
+  border: 1px solid var(--btn-line);
+  background: var(--btn-bg);
   cursor: pointer;
 }
-
 .tab.active {
   border-color: rgba(96,165,250,.35);
   background: rgba(96,165,250,.18);
 }
 
-
-/* ----------------------------------------------------------------------
- * テーブル（スタッツ・順位表）
- * ---------------------------------------------------------------------- */
+/* table */
 .table {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
 }
-
-.table th,
-.table td {
+.table th, .table td {
   padding: 8px;
-  border-bottom: 1px solid rgba(255,255,255,.10);
+  border-bottom: 1px solid var(--line);
   text-align: left;
+}
+
+/* ======================================================================
+ * スマホ最適化（全ページ共通）
+ * ====================================================================== */
+@media (max-width: 820px) {
+  /* 余白を少し詰める */
+  .container { padding: 10px; }
+
+  /* rowは縦積みに寄せる（カードが1列で読みやすい） */
+  .row { flex-direction: column; }
+  .row > * { width: 100%; }
+
+  /* kvは上下に（右側ボタン群が押しやすい） */
+  .kv {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* ボタンは基本フル幅に */
+  .btn { width: 100%; }
+
+  /* タブは詰める */
+  .tab { padding: 10px 8px; }
+
+  /* テーブルは横スクロール可（崩れ防止） */
+  .table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }

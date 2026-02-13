@@ -1,38 +1,85 @@
 import React, { useMemo } from "react";
-import type { Match, Player, Session, WindSeat, Rules } from "../types";
+import type { Match, Player, Session, WindSeat, Rules, UmaRule, GameMode } from "../types";
 import { buildEndSummary, getRanksWithKichya } from "../logic/mahjong";
 
 const windNames = ["東", "南", "西", "北"] as const;
 
-function safeRules(match: Match, session?: Session): Rules {
-  return (match.rules ??
-    session?.rules ?? {
-      gameMode: "yonma",
-      startPoints: 25000,
-      returnPoints: 30000,
-      topOkaPoints: 20000,
-      tobiRule: "leq0",
-      uma: { presetId: "p1", second: 10, third: -10, fourth: -30 },
-    }) as Rules;
+// ---- fallback ----
+function fallbackUma(gm: GameMode): UmaRule {
+  // 3麻は fourth を使わないが、型都合で埋める
+  return gm === "sanma"
+    ? { presetId: "p1", second: 10, third: -10, fourth: 0 }
+    : { presetId: "p1", second: 10, third: -10, fourth: -30 };
 }
 
-function seatsForRanking(match: Match, rules: Rules): WindSeat[] {
-  const gm = (rules.gameMode ?? "yonma") as any;
+function fallbackRules(gm: GameMode = "yonma"): Rules {
+  return {
+    gameMode: gm,
+    startPoints: 25000,
+    returnPoints: gm === "sanma" ? 40000 : 30000,
+    topOkaPoints: 20000,
+    tobiRule: "leq0",
+    uma: fallbackUma(gm),
+  };
+}
+
+/**
+ * ★重要：古いデータや rules の欠損があっても絶対に落ちない Rules を返す
+ * - match.rules / session.rules のどちらかから拾う
+ * - gameMode を確定させてから、他の値を merge
+ * - uma が欠けていれば必ず補完
+ */
+function safeRules(match: Match, session?: Session): Rules {
+  const fromMatch = (match.rules ?? {}) as Partial<Rules> & any;
+  const fromSession = (session?.rules ?? {}) as Partial<Rules> & any;
+
+  const gm = (fromMatch.gameMode ?? fromSession.gameMode ?? "yonma") as GameMode;
+
+  const base = fallbackRules(gm);
+
+  const merged: Rules = {
+    ...base,
+    ...fromSession,
+    ...fromMatch,
+    gameMode: gm,
+  };
+
+  // uma 欠損の救済（ここが今回のクラッシュ原因）
+  const u = (merged.uma ?? {}) as Partial<UmaRule>;
+  merged.uma = {
+    ...fallbackUma(gm),
+    ...u,
+    presetId: (u.presetId ?? fallbackUma(gm).presetId) as any,
+    second: Number.isFinite(u.second as any) ? (u.second as number) : fallbackUma(gm).second,
+    third: Number.isFinite(u.third as any) ? (u.third as number) : fallbackUma(gm).third,
+    fourth: Number.isFinite(u.fourth as any) ? (u.fourth as number) : fallbackUma(gm).fourth,
+  };
+
+  // 数値系の欠損も保険で補完
+  merged.startPoints = Number.isFinite(merged.startPoints as any) ? merged.startPoints : base.startPoints;
+  merged.returnPoints = Number.isFinite(merged.returnPoints as any) ? merged.returnPoints : base.returnPoints;
+  merged.topOkaPoints = Number.isFinite(merged.topOkaPoints as any) ? merged.topOkaPoints : base.topOkaPoints;
+
+  return merged;
+}
+
+function seatsForRanking(rules: Rules): WindSeat[] {
+  const gm = rules.gameMode;
   return gm === "sanma" ? ([0, 1, 2] as WindSeat[]) : ([0, 1, 2, 3] as WindSeat[]);
 }
 
 function umaForRank(rules: Rules, rank: number): number {
   const gm = rules.gameMode;
-  const u = rules.uma;
+  const u = rules.uma; // safeRules が必ず埋めるので undefined にならない
 
   if (gm === "sanma") {
-    // 推測ですが：3麻は 2着=u.second, 3着=u.third, 1着=-(2+3)
+    // 3麻は 2着=u.second, 3着=u.third, 1着=-(2+3)
     if (rank === 1) return -(u.second + u.third);
     if (rank === 2) return u.second;
     return u.third;
   }
 
-  // 4人用
+  // 4麻
   const first = -(u.second + u.third + u.fourth);
   if (rank === 1) return first;
   if (rank === 2) return u.second;
@@ -49,7 +96,7 @@ function umaForRank(rules: Rules, rank: number): number {
  */
 function calcMatchPts(match: Match, rules: Rules): { ptBySeat: number[]; rankBySeat: number[]; finalAdj: number[] } {
   const { finalScoresWithAdjust } = buildEndSummary(match);
-  const seats = seatsForRanking(match, rules);
+  const seats = seatsForRanking(rules);
 
   const { rankBySeat } = getRanksWithKichya(finalScoresWithAdjust, match.kichyaSeat, seats);
 
@@ -66,8 +113,8 @@ function calcMatchPts(match: Match, rules: Rules): { ptBySeat: number[]; rankByS
   for (const s of seats) rawBySeat[s] = baseBySeat[s] + umaForRank(rules, rankBySeat[s]);
 
   const ptBySeat = [0, 0, 0, 0];
-
   const others = seats.filter((s) => rankBySeat[s] !== 1);
+
   let sumOthers = 0;
   for (const s of others) {
     const v = Math.ceil(rawBySeat[s]);
@@ -85,7 +132,7 @@ function sumSessionTotalPt(session: Session, players: Player[]) {
 
   for (const match of session.games ?? []) {
     const rules = safeRules(match, session);
-    const seats = seatsForRanking(match, rules);
+    const seats = seatsForRanking(rules);
     const { ptBySeat } = calcMatchPts(match, rules);
 
     for (const seat of seats) {
@@ -121,7 +168,7 @@ export default function MatchEndPage(props: {
   const s = props.session;
 
   const rules = useMemo(() => safeRules(m, s), [m, s]);
-  const seats = useMemo(() => seatsForRanking(m, rules), [m, rules]);
+  const seats = useMemo(() => seatsForRanking(rules), [rules]);
 
   const end = useMemo(() => {
     const { finalScoresWithAdjust, rankBySeat, tieBreakApplied } = buildEndSummary(m);
