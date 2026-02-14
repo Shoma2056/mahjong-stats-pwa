@@ -210,12 +210,12 @@ export default function MatchEndPage(props: {
             </div>
             <div className="small">順位：{end.rankBySeat[seat]}位</div>
             <div className="kv" style={{ marginTop: 8 }}>
-              <span className="small">最終点（調整込）</span>
-              <span style={{ fontWeight: 800 }}>{end.finalScoresWithAdjust[seat]}</span>
+              <span className="small">最終点</span>
+              <span style={{ fontWeight: 800 }}>{end.finalScoresWithAdjust[seat]}点</span>
             </div>
             <div className="kv" style={{ marginTop: 6 }}>
-              <span className="small">pt（2位以下は切上げ／1位は残差で合計0）</span>
-              <span style={{ fontWeight: 900 }}>{end.ptBySeat[seat]}</span>
+              <span className="small">&nbsp;</span>
+              <span style={{ fontWeight: 900 }}>{end.ptBySeat[seat]}pt</span>
             </div>
           </div>
         ))}
@@ -223,9 +223,9 @@ export default function MatchEndPage(props: {
 
       <hr />
 
-      <h3>Sessionトータルpt（このSession内のMatch合算）</h3>
+      <h3>対局トータルpt</h3>
       <div className="small">
-        ※各Matchの「最終pt（ウマ・オカ反映後。2位以下は切り上げ、1位は合計0になる残差）」を単純合算します。
+        
       </div>
 
       <div style={{ marginTop: 10 }}>

@@ -53,7 +53,6 @@ export default function NewMatchPage(props: Props) {
     const needPlayers = rules.gameMode === "sanma" ? 3 : 4;
 
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
-
     const ok = selectedIds.length === needPlayers;
 
     function togglePlayer(id: string) {
@@ -78,10 +77,10 @@ export default function NewMatchPage(props: Props) {
     }
 
     return (
-      <div className="card">
+      <div className="card newMatchCard">
         <div className="kv">
           <h2>新規対局（ルール設定）</h2>
-          <button className="btn" onClick={p.onBack}>
+          <button className="btn compact" onClick={p.onBack}>
             ホーム
           </button>
         </div>
@@ -106,68 +105,113 @@ export default function NewMatchPage(props: Props) {
 
         <h3>参加者（{needPlayers}人）</h3>
         <div className="small">{needPlayers}人選択してください。</div>
-        <div style={{ marginTop: 8 }}>
-          {p.players.map((pl) => (
-            <button
-              key={pl.id}
-              className={`btn ${selectedIds.includes(pl.id) ? "primary" : ""}`}
-              onClick={() => togglePlayer(pl.id)}
-              style={{ marginRight: 6, marginBottom: 6 }}
-            >
-              {pl.name}
-            </button>
-          ))}
+
+        <div className="playerPickGrid" style={{ marginTop: 10 }}>
+          {p.players.map((pl) => {
+            const on = selectedIds.includes(pl.id);
+            return (
+              <button
+                key={pl.id}
+                className={`btn compact ${on ? "primary" : ""}`}
+                onClick={() => togglePlayer(pl.id)}
+              >
+                {pl.name}
+              </button>
+            );
+          })}
         </div>
 
         <hr />
 
         <h3>ルール</h3>
 
-        <label>開始点</label>
-        <input value={rules.startPoints} onChange={(e) => setRules({ ...rules, startPoints: Number(e.target.value) })} inputMode="numeric" />
+        <div className="rulesGrid">
+          <div>
+            <label>開始点</label>
+            <input
+              value={rules.startPoints}
+              onChange={(e) => setRules({ ...rules, startPoints: Number(e.target.value) })}
+              inputMode="numeric"
+            />
+          </div>
 
-        <label>返し点</label>
-        <input value={rules.returnPoints} onChange={(e) => setRules({ ...rules, returnPoints: Number(e.target.value) })} inputMode="numeric" />
+          <div>
+            <label>返し点</label>
+            <input
+              value={rules.returnPoints}
+              onChange={(e) => setRules({ ...rules, returnPoints: Number(e.target.value) })}
+              inputMode="numeric"
+            />
+          </div>
 
-        <label>トップ取り</label>
-        <input value={rules.topOkaPoints} onChange={(e) => setRules({ ...rules, topOkaPoints: Number(e.target.value) })} inputMode="numeric" />
+          <div>
+            <label>トップ取り</label>
+            <input
+              value={rules.topOkaPoints}
+              onChange={(e) => setRules({ ...rules, topOkaPoints: Number(e.target.value) })}
+              inputMode="numeric"
+            />
+          </div>
 
-        <label>飛び</label>
-        <select value={rules.tobiRule} onChange={(e) => setRules({ ...rules, tobiRule: e.target.value as any })}>
-          <option value="leq0">あり（0点以下で飛び）</option>
-          <option value="lt0">あり（0点未満で飛び）</option>
-          <option value="none">なし</option>
-        </select>
+          <div>
+            <label>飛び</label>
+            <select value={rules.tobiRule} onChange={(e) => setRules({ ...rules, tobiRule: e.target.value as any })}>
+              <option value="leq0">あり（0点以下で飛び）</option>
+              <option value="lt0">あり（0点未満で飛び）</option>
+              <option value="none">なし</option>
+            </select>
+          </div>
 
-        <label>順位点</label>
-        <select
-          value={rules.uma.presetId}
-          onChange={(e) => {
-            const presetId = e.target.value as UmaPresetId;
-            setRules({
-              ...rules,
-              uma: { presetId, ...applyUmaPreset(presetId) },
-            });
-          }}
-        >
-          <option value="p1">+10 / -10 / -30</option>
-          <option value="p2">+10 / -10 / -20</option>
-          <option value="custom">カスタム</option>
-        </select>
+          <div>
+            <label>順位点</label>
+            <select
+              value={rules.uma.presetId}
+              onChange={(e) => {
+                const presetId = e.target.value as UmaPresetId;
+                setRules({
+                  ...rules,
+                  uma: { presetId, ...applyUmaPreset(presetId) },
+                });
+              }}
+            >
+              <option value="p1">+10 / -10 / -30</option>
+              <option value="p2">+10 / -10 / -20</option>
+              <option value="custom">カスタム</option>
+            </select>
+          </div>
+        </div>
 
         {rules.uma.presetId === "custom" && (
-          <div className="row" style={{ marginTop: 10 }}>
-            <div style={{ flex: "1 1 120px" }}>
+          <div className="rulesGrid" style={{ marginTop: 10 }}>
+            <div>
               <label>2着</label>
-              <input value={rules.uma.second} onChange={(e) => setRules({ ...rules, uma: { ...rules.uma, second: Number(e.target.value) } })} inputMode="numeric" />
+              <input
+                value={rules.uma.second}
+                onChange={(e) =>
+                  setRules({ ...rules, uma: { ...rules.uma, second: Number(e.target.value) } })
+                }
+                inputMode="numeric"
+              />
             </div>
-            <div style={{ flex: "1 1 120px" }}>
+            <div>
               <label>3着</label>
-              <input value={rules.uma.third} onChange={(e) => setRules({ ...rules, uma: { ...rules.uma, third: Number(e.target.value) } })} inputMode="numeric" />
+              <input
+                value={rules.uma.third}
+                onChange={(e) =>
+                  setRules({ ...rules, uma: { ...rules.uma, third: Number(e.target.value) } })
+                }
+                inputMode="numeric"
+              />
             </div>
-            <div style={{ flex: "1 1 120px" }}>
+            <div>
               <label>4着（3麻では未使用）</label>
-              <input value={rules.uma.fourth} onChange={(e) => setRules({ ...rules, uma: { ...rules.uma, fourth: Number(e.target.value) } })} inputMode="numeric" />
+              <input
+                value={rules.uma.fourth}
+                onChange={(e) =>
+                  setRules({ ...rules, uma: { ...rules.uma, fourth: Number(e.target.value) } })
+                }
+                inputMode="numeric"
+              />
             </div>
           </div>
         )}
@@ -177,7 +221,11 @@ export default function NewMatchPage(props: Props) {
         <button className="btn primary" disabled={!ok} onClick={createSession}>
           次へ（席決め）
         </button>
-        {!ok && <div className="small" style={{ marginTop: 8 }}>※ {needPlayers}人選択すると進めます</div>}
+        {!ok && (
+          <div className="small" style={{ marginTop: 8 }}>
+            ※ {needPlayers}人選択すると進めます
+          </div>
+        )}
       </div>
     );
   }
@@ -190,7 +238,9 @@ export default function NewMatchPage(props: Props) {
   const needSeats = gm === "sanma" ? 3 : 4;
   const winds = gm === "sanma" ? winds3 : winds4;
 
-  const [seatIds, setSeatIds] = useState<(string | "")[]>(Array.from({ length: needSeats }, () => ""));
+  const [seatIds, setSeatIds] = useState<(string | "")[]>(
+    Array.from({ length: needSeats }, () => "")
+  );
 
   const ok = useMemo(() => {
     if (seatIds.some((x) => !x)) return false;
@@ -216,23 +266,25 @@ export default function NewMatchPage(props: Props) {
   }
 
   return (
-    <div className="card">
+    <div className="card newMatchCard">
       <div className="kv">
         <h2>席決め</h2>
-        <button className="btn" onClick={p.onBack}>
+        <button className="btn compact" onClick={p.onBack}>
           戻る
         </button>
       </div>
 
       <div className="small">
-        {gm === "sanma" ? "参加者を東南西に割り当てます（北は常に欠け）。" : "参加者を東南西北に割り当てます。"}
+        {gm === "sanma"
+          ? "参加者を東南西に割り当てます（北は常に欠け）。"
+          : "参加者を東南西北に割り当てます。"}
       </div>
       <hr />
 
       <div className={needSeats === 3 ? "grid3" : "grid4"}>
         {winds.map((w, i) => (
-          <div key={w} className="card">
-            <div style={{ fontWeight: 800 }}>{w}</div>
+          <div key={w} className="card seatPickCard">
+            <div style={{ fontWeight: 800, marginBottom: 6 }}>{w}</div>
             <select value={seatIds[i]} onChange={(e) => setSeat(i, e.target.value)}>
               <option value="">選択…</option>
               {p.session.participantIds.map((pid) => (
@@ -250,7 +302,11 @@ export default function NewMatchPage(props: Props) {
       <button className="btn primary" disabled={!ok} onClick={createMatch}>
         対局開始
       </button>
-      {!ok && <div className="small" style={{ marginTop: 8 }}>※ 席をすべて埋めて（重複なし）</div>}
+      {!ok && (
+        <div className="small" style={{ marginTop: 8 }}>
+          ※ 席をすべて埋めて（重複なし）
+        </div>
+      )}
     </div>
   );
 }

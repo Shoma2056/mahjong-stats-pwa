@@ -8,33 +8,53 @@
 
   color-scheme: dark;
 
-  --bg: #0b1220;
-  --card: #121a2b;
+  /* ===============================
+     Home寄せ：ティール基調（見やすさ優先）
+     =============================== */
 
-  --text: #e8eefc;
-  --muted: #93a4bf;
+  /* 背景（ホームの青緑っぽい暗色） */
+  --bg: #0b2a2b;
 
-  --line: rgba(255,255,255,.10);
-  --card-line: rgba(255,255,255,.08);
-  --shadow: 0 10px 24px rgba(0,0,0,.35);
+  /* カード（背景より少し明るくして境界を出す） */
+  --card: #103235;
 
-  --accent: #60a5fa;
-  --danger: #fb7185;
+  /* 文字（コントラスト強め） */
+  --text: #eaf6f3;
+  --muted: #a7c7c1;
+
+  /* 区切り線（やや濃くして見やすく） */
+  --line: rgba(255,255,255,.12);
+  --card-line: rgba(255,255,255,.14);
+  --shadow: 0 10px 24px rgba(0,0,0,.40);
+
+  /* アクセント（ホーム寄せのティール） */
+  --accent: #3fb6b0;
+
+  /* 成功系（緑は残す＝麻雀感） */
   --ok: #34d399;
 
+  /* 危険系 */
+  --danger: #fb7185;
+
+  /* 危険ボタン（削除用） */
+--danger-bg: rgba(251,113,133,.18);
+--danger-line: rgba(251,113,133,.45);
+
+
+  /* ボタン（青緑系の深めトーン） */
   --btn-bg: rgba(255,255,255,.06);
-  --btn-line: rgba(255,255,255,.14);
-  --btn-hover: rgba(255,255,255,.10);
+  --btn-line: rgba(255,255,255,.16);
+  --btn-hover: rgba(255,255,255,.11);
 
-  --primary-bg: rgba(96,165,250,.22);
-  --primary-line: rgba(96,165,250,.35);
+  /* primary（“緑寄り”で押した感を出す） */
+  --primary-bg: rgba(52,211,153,.18);
+  --primary-line: rgba(52,211,153,.45);
 
-  --danger-bg: rgba(251,113,133,.18);
-  --danger-line: rgba(251,113,133,.35);
-
-  --field-bg: rgba(0,0,0,.18);
-  --field-line: rgba(255,255,255,.14);
+  /* 入力欄（背景と差を出して見やすく） */
+  --field-bg: rgba(0,0,0,.22);
+  --field-line: rgba(255,255,255,.18);
 }
+
 
 /* Home専用：明るい卓テーマ（そのまま） */
 .themeFelt {
@@ -67,6 +87,9 @@ body {
 }
 
 a { color: var(--accent); }
+
+/* はみ出し対策：基本 box-sizing */
+*, *::before, *::after { box-sizing: border-box; }
 
 /* コンテナ：全ページの余白基準（スマホ優先） */
 .container {
@@ -125,6 +148,13 @@ a { color: var(--accent); }
   transform: none;
 }
 
+/* ★小さめボタン（NewMatchPageなどで使用） */
+.btn.compact {
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
 /* pill */
 .pill {
   display: inline-flex;
@@ -171,7 +201,16 @@ hr {
   color: var(--muted);
 }
 
-/* grid4 */
+/* grid3 / grid4 */
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+@media (max-width: 820px) {
+  .grid3 { grid-template-columns: repeat(1, 1fr); }
+}
+
 .grid4 {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -242,29 +281,281 @@ hr {
  * スマホ最適化（全ページ共通）
  * ====================================================================== */
 @media (max-width: 820px) {
-  /* 余白を少し詰める */
   .container { padding: 10px; }
 
-  /* rowは縦積みに寄せる（カードが1列で読みやすい） */
   .row { flex-direction: column; }
   .row > * { width: 100%; }
 
-  /* kvは上下に（右側ボタン群が押しやすい） */
   .kv {
     flex-direction: column;
     align-items: stretch;
   }
 
-  /* ボタンは基本フル幅に */
+  /* 全体としてはフル幅ボタンが基本 */
   .btn { width: 100%; }
 
-  /* タブは詰める */
+  /* ★compactボタンはフル幅でもOK（見た目小さめ） */
+  .btn.compact { width: 100%; }
+
   .tab { padding: 10px 8px; }
 
-  /* テーブルは横スクロール可（崩れ防止） */
   .table {
     display: block;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
+}
+
+/* ======================================================================
+ * NewMatchPage（新規対局/席決め） コンパクト化
+ * ====================================================================== */
+.newMatchCard h3 { margin-top: 6px; }
+
+/* 参加者ボタン：2列でコンパクトに並べる */
+.playerPickGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+@media (min-width: 821px) {
+  .playerPickGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ルール入力：詰めて表示 */
+.rulesGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+@media (max-width: 820px) {
+  .rulesGrid { grid-template-columns: 1fr; }
+}
+
+/* 席決めの小カードを少し詰める */
+.seatPickCard { padding: 10px; }
+
+/* ======================================================================
+ * MatchPage（卓レイアウト：東北 / 南西 / 結果）
+ * ====================================================================== */
+
+.matchWrap {
+  overflow-x: hidden;
+}
+
+/* ヘッダー：ボタンを小さめチップ化 */
+.matchHeader .matchHeaderTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.matchTitle {
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.matchHeaderBtns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn.chip {
+  padding: 7px 10px;
+  border-radius: 999px;
+  width: auto;            /* ←スマホの .btn{width:100%} を無効化 */
+}
+
+/* ★ここが重要：2列を“絶対に”維持する（1列に落とさない） */
+.tableGrid2x2 {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-items: start;
+}
+
+.tableCell,
+.tableResult {
+  min-width: 0;
+}
+
+.tableResult {
+  grid-column: 1 / -1;
+}
+
+/* 座席カード */
+.seatCard {
+  border-radius: 18px;
+  padding: 12px;
+  min-width: 0;
+}
+
+.seatHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.seatTitle {
+  font-weight: 900;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.seatBadges {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.seatScore {
+  margin-top: 6px;
+  margin-bottom: 10px;
+}
+
+.seatScoreNum {
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: .5px;
+}
+
+.seatSection {
+  margin-top: 10px;
+}
+
+.seatLabel {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+/* 副露：今の「横長ボタンでデカい」を抑える */
+.furoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+/* MatchPage内の小ボタンは、スマホでも“フル幅にしない” */
+.btn.mini {
+  padding: 8px 10px;
+  border-radius: 14px;
+  width: 100%;
+}
+
+.btn.miniWide {
+  padding: 10px 10px;
+  border-radius: 14px;
+  width: 100%;
+}
+
+/* 立直OFFもデカすぎるのが嫌なら少しだけ高さを抑える */
+.btn.miniWide {
+  padding: 9px 10px;
+}
+
+/* 結果カード */
+.resultCard .resultTitle {
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.tabs.compact .tab {
+  padding: 10px 8px;
+}
+
+/* ★スマホ全体ルールの「ボタン全部フル幅」を、MatchPageの一部だけ無効化 */
+@media (max-width: 820px) {
+  .btn.chip { width: auto; }                 /* ヘッダーチップ */
+  .seatCard .btn { width: auto; }            /* 座席内ボタンはフル幅にしない */
+  .seatCard .btn.mini,
+  .seatCard .btn.miniWide { width: 100%; }   /* ただし座席内は整列のため100%はOK */
+}
+
+/* ================================
+   結果入力：プリセット専用
+   ================================ */
+
+.presetGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+@media (max-width: 820px) {
+  .presetGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* プリセット用ボタン（スマホでもフル幅にしない） */
+.btn.preset {
+  padding: 8px 6px;
+  font-size: 13px;
+  border-radius: 12px;
+  width: auto;
+}
+
+@media (max-width: 820px) {
+  .btn.preset {
+    width: 100%;
+  }
+}
+
+/* =========================================
+   結果入力（resultModal）だけをコンパクトにする
+   他ページへ影響させないため必ず .resultModal でスコープする
+   ========================================= */
+
+.resultModal .resultFormGrid{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)); /* 横1列で3枠 */
+  gap: 8px;
+}
+
+.resultModal .field{ min-width: 0; }
+
+/* 入力欄を小さく（結果入力の中だけ） */
+.resultModal label{
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.resultModal input,
+.resultModal select{
+  padding: 8px 8px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+/* 裏ドラの入力も少し詰める */
+.resultModal > hr { margin: 8px 0; }
+
+/* プリセット：スマホでも4列のまま（昔のコンパクト感） */
+.resultModal .presetGrid{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+@media (max-width: 360px){
+  .resultModal .presetGrid{
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* プリセットボタンを小さく（resultModal の中だけ） */
+.resultModal .btn.preset{
+  padding: 6px 4px;
+  font-size: 13px;
+  border-radius: 12px;
+  width: 100%;
+  line-height: 1.1;
 }

@@ -374,7 +374,7 @@ export default function StatsPage(props: { matches: Match[]; players: Player[]; 
         <div>
           <h2>スタッツ</h2>
           <div className="small" style={{ marginTop: 6 }}>
-            集計対象：{modeLabel(mode)}（{meta.countedMatches}/{meta.totalMatches} match：※logsがあるものだけ集計）
+            集計対象：{modeLabel(mode)}（{meta.countedMatches}/{meta.totalMatches} 半荘）
           </div>
         </div>
         <button className="btn" onClick={props.onBack}>戻る</button>
@@ -396,12 +396,12 @@ export default function StatsPage(props: { matches: Match[]; players: Player[]; 
       </div>
 
       <div className="small">
-        ※ptは「2位以下は切り上げ、1位は合計0になる残差」です（3麻は3人、4麻/4人3麻は4人で合計0）。
+        
       </div>
 
       <hr />
 
-      <h3>Matchスタッツ</h3>
+      <h3>半荘スタッツ</h3>
       {rowsMatch.length === 0 ? (
         <div className="small">まだ集計できる対局がありません。</div>
       ) : (

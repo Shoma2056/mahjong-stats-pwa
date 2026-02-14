@@ -3,6 +3,26 @@ import type { Player, Session } from "../types";
 
 type ListMode = "active" | "archive";
 
+type ChangelogItem = {
+  version: string;
+  date: string; // "YYYY-MM-DD" など
+  changes: string[];
+};
+
+const APP_VERSION = "1.0.0";
+
+// 必要になったらここに追記していくだけでOK
+const CHANGELOG: ChangelogItem[] = [
+  {
+    version: "1.0.0",
+    date: "2026-02-14",
+    changes: [
+      "対局中UIの改善（結果入力を別画面化、プリセット最適化）",
+      "ホーム/新規対局の配色を卓っぽく調整",
+    ],
+  },
+];
+
 export default function Home(props: {
   players: Player[];
   sessions: Session[];
@@ -16,6 +36,9 @@ export default function Home(props: {
 
   // デフォルトは「進行中」
   const [mode, setMode] = useState<ListMode>("active");
+
+  // 更新履歴モーダル
+  const [showChangelog, setShowChangelog] = useState(false);
 
   const activeSessions = useMemo(
     () => sessions.filter((s) => !s.ended),
@@ -50,7 +73,7 @@ export default function Home(props: {
   const modeTitle = mode === "active" ? "進行中の対局" : "過去の対局（アーカイブ）";
   const modeSub =
     mode === "active"
-      ? "タップで再開（席決めへ）"
+      ? "タップで再開"
       : "終了済みの記録を確認できます";
 
   return (
@@ -71,7 +94,7 @@ export default function Home(props: {
               </div>
 
               <div className="small" style={{ marginTop: 6 }}>
-                1日まとめ（Session） / 局編集・点数修正に対応
+                
               </div>
 
               <hr />
@@ -115,6 +138,24 @@ export default function Home(props: {
 
               <div className="small" style={{ lineHeight: 1.6 }}>
                 「新規対局」でルール・参加者を決めて、その日の半荘を複数記録できます。
+              </div>
+
+              {/* ここに Ver + 更新履歴（最小UI） */}
+              <div
+                style={{
+                  marginTop: 12,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 10,
+                }}
+              >
+                <div className="small" style={{ opacity: 0.9 }}>
+                  Ver {APP_VERSION}
+                </div>
+                <button className="btn chip" onClick={() => setShowChangelog(true)}>
+                  更新履歴
+                </button>
               </div>
             </div>
 
@@ -203,6 +244,67 @@ export default function Home(props: {
           </div>
         </div>
       </div>
+
+      {/* 更新履歴モーダル（最小実装） */}
+      {showChangelog && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 50,
+            background: "rgba(0,0,0,.45)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 14,
+          }}
+          onClick={() => setShowChangelog(false)}
+        >
+          <div
+            className="card"
+            style={{
+              width: "min(820px, 100%)",
+              maxHeight: "min(80vh, 720px)",
+              overflow: "auto",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="kv">
+              <h2 style={{ margin: 0 }}>更新履歴</h2>
+              <button className="btn chip" onClick={() => setShowChangelog(false)}>
+                閉じる
+              </button>
+            </div>
+
+            <div className="small" style={{ marginTop: 6 }}>
+              現在のバージョン：Ver {APP_VERSION}
+            </div>
+
+            <hr />
+
+            {CHANGELOG.length === 0 ? (
+              <div className="small">まだ履歴がありません。</div>
+            ) : (
+              CHANGELOG.map((item) => (
+                <div key={item.version} className="card" style={{ marginBottom: 10 }}>
+                  <div style={{ display: "flex", gap: 10, alignItems: "baseline", flexWrap: "wrap" }}>
+                    <div style={{ fontWeight: 900 }}>Ver {item.version}</div>
+                    <div className="small">{item.date}</div>
+                  </div>
+                  <hr />
+                  <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
+                    {item.changes.map((c, idx) => (
+                      <li key={idx} className="small" style={{ color: "var(--text)" }}>
+                        {c}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 }
