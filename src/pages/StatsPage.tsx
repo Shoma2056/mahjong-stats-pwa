@@ -2,6 +2,8 @@ import React, { useMemo, useState } from "react";
 import type { Match, Player, Rules, WindSeat, TobiRule, KyokuLog, GameMode } from "../types";
 import { buildEndSummary, getRanksWithKichya } from "../logic/mahjong";
 
+import "../StatsPage.css";
+
 // -------------------- Rules safety --------------------
 function fallbackRules(): Rules {
   return {
@@ -368,110 +370,132 @@ export default function StatsPage(props: { matches: Match[]; players: Player[]; 
     };
   }, [filteredMatches, props.players]);
 
-  return (
-    <div className="card">
-      <div className="kv">
-        <div>
-          <h2>スタッツ</h2>
-          <div className="small" style={{ marginTop: 6 }}>
-            集計対象：{modeLabel(mode)}（{meta.countedMatches}/{meta.totalMatches} 半荘）
+    return (
+    <div className="statsPage">
+      {/* 背景 */}
+      <div className="statsBgLayer" />
+
+      <div className="statsInner">
+        {/* ヘッダー */}
+        <header className="statsHeader">
+          <h1 className="statsTitle">スタッツ</h1>
+          <div className="statsTitleDivider" />
+
+          <div className="statsMetaRow">
+            <div className="statsMeta">
+              集計対象：{modeLabel(mode)}（{meta.countedMatches}/{meta.totalMatches} 半荘）
+            </div>
+
+            <button className="statsBackBtn" onClick={props.onBack}>
+              戻る
+            </button>
           </div>
+        </header>
+
+        {/* フィルター */}
+        <div className="statsFilters">
+          {(["all", "yonma", "sanma", "yonma_sanma4"] as ModeFilter[]).map((m) => (
+            <button
+              key={m}
+              className={`statsFilterBtn ${mode === m ? "isActive" : ""}`}
+              onClick={() => setMode(m)}
+              type="button"
+            >
+              {modeLabel(m)}
+            </button>
+          ))}
         </div>
-        <button className="btn" onClick={props.onBack}>戻る</button>
+
+        <div className="statsSectionDivider" />
+
+        {/* 半荘スタッツ */}
+        <section className="statsSection">
+          <h2 className="statsH2">半荘スタッツ</h2>
+
+          {rowsMatch.length === 0 ? (
+            <div className="statsSmall">まだ集計できる対局がありません。</div>
+          ) : (
+            <div className="statsTableWrap">
+              <table className="statsTable">
+                <thead>
+                  <tr>
+                    <th>順</th>
+                    <th>プレイヤー</th>
+                    <th>対戦</th>
+                    <th className="num">トータルpt</th>
+                    <th className="num">平均</th>
+                    <th className="num">1位率</th>
+                    <th className="num">飛び率</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rowsMatch.map((r, i) => (
+                    <tr key={r.playerId}>
+                      <td>{i + 1}</td>
+                      <td className="name">{r.name}</td>
+                      <td className="num">{r.matches}</td>
+                      <td className="num strong">{r.totalPt}</td>
+                      <td className="num">{r.avgRank.toFixed(2)}</td>
+                      <td className="num">{(r.firstRate * 100).toFixed(1)}%</td>
+                      <td className="num">{(r.tobiRate * 100).toFixed(1)}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        <div className="statsSectionDivider" />
+
+        {/* 局スタッツ */}
+        <section className="statsSection">
+          <h2 className="statsH2">局スタッツ</h2>
+
+          {rowsKyoku.length === 0 ? (
+            <div className="statsSmall">まだ局ログがありません。</div>
+          ) : (
+            <div className="statsTableWrap wide">
+              <table className="statsTable">
+                <thead>
+                  <tr>
+                    <th>プレイヤー</th>
+                    <th className="num">参加局数</th>
+                    <th className="num">和了率</th>
+                    <th className="num">ツモ</th>
+                    <th className="num">放銃</th>
+                    <th className="num">立直</th>
+                    <th className="num">副露</th>
+                    <th className="num">平均打点</th>
+                    <th className="num">平均裏</th>
+                    <th className="num">追っかけ</th>
+                    <th className="num">追っかけられ</th>
+                    <th className="num">立直放銃</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rowsKyoku.map((r) => (
+                    <tr key={r.playerId}>
+                      <td className="name">{r.name}</td>
+                      <td className="num">{r.hands}</td>
+                      <td className="num">{(r.agariRate * 100).toFixed(1)}%</td>
+                      <td className="num">{(r.tsumoRate * 100).toFixed(1)}%</td>
+                      <td className="num">{(r.dealinRate * 100).toFixed(1)}%</td>
+                      <td className="num">{(r.riichiRate * 100).toFixed(1)}%</td>
+                      <td className="num">{(r.furoRate * 100).toFixed(1)}%</td>
+                      <td className="num">{r.avgWinIncome.toFixed(0)}</td>
+                      <td className="num">{r.avgUra === null ? "-" : r.avgUra.toFixed(2)}</td>
+                      <td className="num">{(r.riichiChaseRate * 100).toFixed(1)}%</td>
+                      <td className="num">{(r.riichiGotChasedRate * 100).toFixed(1)}%</td>
+                      <td className="num">{(r.riichiDealinRate * 100).toFixed(1)}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
       </div>
-
-      <hr />
-
-      {/* モード切替 */}
-      <div className="tabs" style={{ marginBottom: 10 }}>
-        {(["all", "yonma", "sanma", "yonma_sanma4"] as ModeFilter[]).map((m) => (
-          <div
-            key={m}
-            className={`tab ${mode === m ? "active" : ""}`}
-            onClick={() => setMode(m)}
-          >
-            {modeLabel(m)}
-          </div>
-        ))}
-      </div>
-
-      <div className="small">
-        
-      </div>
-
-      <hr />
-
-      <h3>半荘スタッツ</h3>
-      {rowsMatch.length === 0 ? (
-        <div className="small">まだ集計できる対局がありません。</div>
-      ) : (
-        <table className="table">
-          <thead>
-            <tr>
-              <th>順位</th><th>プレイヤー</th><th>対戦数</th><th>トータルpt</th><th>平均順位</th><th>1位率</th><th>飛び率</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rowsMatch.map((r, i) => (
-              <tr key={r.playerId}>
-                <td>{i + 1}</td>
-                <td>{r.name}</td>
-                <td>{r.matches}</td>
-                <td style={{ fontWeight: 800 }}>{r.totalPt}</td>
-                <td>{r.avgRank.toFixed(2)}</td>
-                <td>{(r.firstRate * 100).toFixed(1)}%</td>
-                <td>{(r.tobiRate * 100).toFixed(1)}%</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-
-      <hr />
-
-      <h3>局スタッツ</h3>
-      {rowsKyoku.length === 0 ? (
-        <div className="small">まだ局ログがありません。</div>
-      ) : (
-        <div style={{ overflowX: "auto" }}>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>プレイヤー</th>
-                <th>参加局数</th>
-                <th>和了率</th>
-                <th>ツモ和了率</th>
-                <th>放銃率</th>
-                <th>立直率</th>
-                <th>副露率</th>
-                <th>平均打点</th>
-                <th>平均裏ドラ枚数</th>
-                <th>立直追っかけ率</th>
-                <th>立直後追っかけられ率</th>
-                <th>立直後放銃率</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rowsKyoku.map((r) => (
-                <tr key={r.playerId}>
-                  <td style={{ fontWeight: 700 }}>{r.name}</td>
-                  <td>{r.hands}</td>
-                  <td>{(r.agariRate * 100).toFixed(1)}%</td>
-                  <td>{(r.tsumoRate * 100).toFixed(1)}%</td>
-                  <td>{(r.dealinRate * 100).toFixed(1)}%</td>
-                  <td>{(r.riichiRate * 100).toFixed(1)}%</td>
-                  <td>{(r.furoRate * 100).toFixed(1)}%</td>
-                  <td>{r.avgWinIncome.toFixed(0)}</td>
-                  <td>{r.avgUra === null ? "-" : r.avgUra.toFixed(2)}</td>
-                  <td>{(r.riichiChaseRate * 100).toFixed(1)}%</td>
-                  <td>{(r.riichiGotChasedRate * 100).toFixed(1)}%</td>
-                  <td>{(r.riichiDealinRate * 100).toFixed(1)}%</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
     </div>
   );
 }

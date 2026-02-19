@@ -10,6 +10,8 @@ import React, { useMemo, useState } from "react";
 import type { Player } from "../types";
 import { uid } from "../logic/mahjong";
 
+import "../PlayersPage.css";
+
 export default function PlayersPage(props: {
   players: Player[];
   onSave: (players: Player[]) => void;
@@ -44,30 +46,31 @@ export default function PlayersPage(props: {
   }
 
   return (
-    <div className="card">
-      <div className="kv">
-        <h2>プレイヤー管理</h2>
-        <button className="btn" onClick={props.onBack}>
-          戻る
+    <div className="playersPage">
+      <div className="playersBgLayer" />
+      <div className="playersHeader">
+        <button className="playersBackBtn" onClick={props.onBack}>
+          {"<"}  戻る
         </button>
+        <h2 className="playersTitle">プレイヤー管理</h2>
+        <div className="playersTitleDivider" />
       </div>
-
-      <hr />
 
       {/* ✅ 2ブロックを専用レイアウトで管理（.rowは使わない） */}
       <div className="playersLayout">
         {/* 追加ブロック */}
         <section className="playersAdd">
-          <label>新規プレイヤー名</label>
+
+           <div className="playersAddRow">
+          
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="例：Aさん"
           />
 
-          <div className="playersActions">
             <button
-              className="btn primary"
+              className="playersAddBtn"
               disabled={!name.trim() || exists}
               onClick={add}
             >
@@ -79,21 +82,16 @@ export default function PlayersPage(props: {
 
         {/* 一覧ブロック */}
         <section className="playersList">
-          <label>登録済み</label>
+          
           {players.length === 0 && (
             <div className="small">まだ登録がありません。</div>
           )}
 
           {players.map((p) => (
-            <div key={p.id} className="kv card" style={{ marginTop: 8 }}>
-              <div>
-                <div style={{ fontWeight: 700 }}>{p.name}</div>
-                <div className="small">
-                  {new Date(p.createdAt).toLocaleDateString()}
-                </div>
-              </div>
+            <div key={p.id} className="playerCard">
+              <div className="playerName">{p.name}</div>
 
-              <button className="btn danger" onClick={() => confirmRemove(p)}>
+              <button className="playerDeleteBtn" onClick={() => confirmRemove(p)}>
                 削除
               </button>
             </div>

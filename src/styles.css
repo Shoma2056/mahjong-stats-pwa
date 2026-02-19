@@ -55,30 +55,6 @@
   --field-line: rgba(255,255,255,.18);
 }
 
-
-/* Home専用：明るい卓テーマ（そのまま） */
-.themeFelt {
-  color-scheme: light;
-  --bg: transparent;
-  --card: rgba(10, 20, 35, 0.82);
-  --text: rgba(255,255,255,0.92);
-  --muted: rgba(255,255,255,0.70);
-  --line: rgba(255,255,255,.14);
-  --card-line: rgba(255,255,255,.14);
-  --shadow: 0 14px 34px rgba(0,0,0,.28);
-  --accent: #14b8a6;
-
-  --primary-bg: rgba(20,184,166,.22);
-  --primary-line: rgba(20,184,166,.40);
-
-  --btn-bg: rgba(255,255,255,.08);
-  --btn-line: rgba(255,255,255,.18);
-  --btn-hover: rgba(255,255,255,.12);
-
-  --field-bg: rgba(0,0,0,.20);
-  --field-line: rgba(255,255,255,.20);
-}
-
 /* 全体 */
 body {
   margin: 0;
@@ -108,33 +84,110 @@ a { color: var(--accent); }
 
 /* カード */
 .card {
+  position: relative;
   background: var(--card);
   border: 1px solid var(--card-line);
   border-radius: 16px;
   padding: 12px;
   box-shadow: var(--shadow);
-  backdrop-filter: blur(6px);
+
+  /* 目標は“ガラス感”弱め */
+  backdrop-filter: blur(2px);
 }
 
-/* ボタン */
-.btn {
-  border: 1px solid var(--btn-line);
-  background: var(--btn-bg);
-  color: var(--text);
-  padding: 10px 12px;
-  border-radius: 14px;
-  cursor: pointer;
-  transition: transform .12s ease, background-color .12s ease, border-color .12s ease;
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 1px;
+  background: linear-gradient(
+    145deg,
+    rgba(198,168,90,.25),
+    transparent 40%
+  );
+
+  /* 枠線だけ出すマスク */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
 }
 
-.btn:hover {
-  background: var(--btn-hover);
+/* =========================================================
+   Image Frame Button（9-slice）
+   - public/btn-frame.png
+   - public/btn-frame-pressed.png
+   ========================================================= */
+
+/* 画像額縁ボタン */
+.btn.frame {
+  position: relative;
+
+  /* 既存の塗り/線を無効化（額縁が主役） */
+  background: transparent;
+
+  min-height: 64px;      /* ←追加：細長さ防止 */
+  padding: 10px 18px;    /* ←追加：frameはここで決める（Home側のinlineより優先させたいならHome側を消す） */
+  
+  border: 20px solid transparent; /* ← 2x画像前提：枠厚40pxの半分=20px */
+  border-radius: 16px;
+
+  /* 9-slice：40pxを切り出して伸ばす */
+  border-image-source: url("/btn-frame.png");
+  border-image-slice: 40 fill;     /* ← 画像側の枠厚 */
+  border-image-width: 20px;        /* ← 表示上の枠厚 */
+  border-image-repeat: stretch;
+
+  /* 中身（テキストの乗る面） */
+  color: rgba(245, 241, 230, 0.96);
+  font-weight: 800;
+  letter-spacing: .08em;
+
+  /* 目標の“静かさ”：動きは控えめ */
+  box-shadow: 0 12px 30px rgba(0,0,0,.55);
+}
+
+/* hoverは軽く */
+.btn.frame:hover {
   transform: translateY(-1px);
+  box-shadow: 0 16px 36px rgba(0,0,0,.62);
 }
 
-.btn.primary {
-  background: var(--primary-bg);
-  border-color: var(--primary-line);
+/* 押下で pressed 画像に差し替え */
+.btn.frame:active {
+  transform: translateY(0px);
+  border-image-source: url("/btn-frame-pressed.png");
+  box-shadow: 0 10px 26px rgba(0,0,0,.55);
+}
+/* ================================
+   frameボタンは“素のbtn装飾”を無効化
+   - 内枠（二重線）を消す
+   - hoverの背景塗りを消す
+   ================================ */
+
+/* .btn::after（二重線）を無効化 */
+/*.btn.frame::after {
+  content: none;
+}*/
+
+/* .btn:hover の背景が乗るのを防ぐ */
+.btn.frame:hover {
+  background: transparent;
+}
+
+/* 押下時も余計な背景が乗らないように */
+.btn.frame:active {
+  background: transparent;
+}
+
+
+.btn.primary:hover {
+  background-position: right center;
+  box-shadow: 0 12px 30px rgba(0,0,0,.6);
 }
 
 .btn.danger {
@@ -171,6 +224,11 @@ a { color: var(--accent); }
 /* 見出し */
 h1, h2, h3 { margin: 0 0 10px 0; }
 
+h2 {
+  letter-spacing: .08em;
+  font-weight: 800;
+}
+
 /* フォーム */
 label {
   display: block;
@@ -192,14 +250,16 @@ input, select {
 /* 区切り・補助 */
 hr {
   border: none;
-  border-top: 1px solid var(--line);
+  border-top: 2px solid var(--line);
   margin: 10px 0;
 }
 
 .small {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
+  line-height: 1.65;
 }
+
 
 /* grid3 / grid4 */
 .grid3 {
@@ -558,4 +618,311 @@ hr {
   border-radius: 12px;
   width: 100%;
   line-height: 1.1;
+}
+
+
+
+
+
+
+
+.titleHr {
+  height: 1.5px;
+  border: none;
+  margin: 30px 0;
+
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(214,188,112,0.15) 5%,
+    rgba(197,186,150,0.95) 50%,
+    rgba(214,188,112,0.15) 95%,
+    transparent 100%
+  );
+}
+
+/* =========================
+   Home: tabs（進行中｜過去）
+   ========================= */
+
+
+/* 見出し：進行中の対局 / 過去の対局 */
+.sectionTitle {
+  margin: 0;
+  font-family: "Zen Kaku Gothic New", sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  color: rgba(238, 230, 210, 1);
+}
+
+/* 見出し行（左：タイトル / 右：件数） */
+.kv.sectionHeader {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: nowrap;
+
+  padding: 0 8px;
+  margin-bottom: 16px;
+}
+
+/* 左側が伸びすぎて右を押し出さないように */
+.kv.sectionHeader > div:first-child {
+  min-width: 0;
+}
+
+/* 右：件数 */
+.kv.sectionHeader .sectionCount {
+  white-space: nowrap;
+  flex: 0 0 auto;
+  line-height: 1;
+}
+
+/* Home session card: shape only */
+/* Home session card - aligned with btn style */
+/* ==============================
+   Home session card（枠：オレンジ寄り金 / 光沢あり）
+   ※この3つは “全置換” してください
+   ============================== */
+
+/* =========================
+   sessionCard：枠 “金属感”版（全置換）
+   ========================= */
+
+.sessionCard{
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  padding: 18px;
+
+  /* ここは今の中身の背景はそのままでもOK */
+   /* ここだけ差し替え：画像を一番上に積む */
+  background:
+    url("/card-tex-05.png") center / cover no-repeat,
+    radial-gradient(circle at 50% 0%,
+      rgba(198,168,90,.10),
+      transparent 42%),
+    radial-gradient(ellipse at 50% -10%,
+      rgba(50, 105, 85, .80) 0%,
+      rgba(10, 20, 16, .97) 85%);
+
+  /* 画像が強すぎたらここで調整 */
+  background-blend-mode: soft-light, normal, normal;
+
+  box-shadow: 0 18px 36px rgba(0,0,0,.65);
+  backdrop-filter: blur(4px);
+
+  filter: brightness(1.2);
+}
+
+/* 枠（色ムラ＝反射）を “線だけ” に閉じ込める */
+.sessionCard::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius: inherit;
+  padding: 2px;                 /* ← 枠の太さ */
+
+  background:
+    /* 反射：左上が明るい */
+    radial-gradient(circle at 12% 8%,
+      rgba(255, 245, 220, .95),
+      rgba(255, 190, 120, .55) 28%,
+      rgba(170, 95, 40, .35) 55%,
+      rgba(0,0,0,0) 75%),
+    /* 反射：下中央が明るい（筋じゃなく “当たり”） */
+    radial-gradient(ellipse at 50% 104%,
+      rgba(255, 210, 140, .70),
+      rgba(255, 150, 80, .28) 35%,
+      rgba(0,0,0,0) 62%),
+    /* ベースの銅金（オレンジ寄り） */
+    linear-gradient(180deg,
+      rgba(255, 215, 160, .70),
+      rgba(255, 170, 105, .42) 45%,
+      rgba(150, 85, 35, .55));
+
+  /* “枠だけ表示”のマスク */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+
+  pointer-events:none;
+  opacity: .92;                 /* ← 塗ってる感が出るなら .85 まで下げる */
+}
+
+/* 内側の薄いハイライト（これが金属っぽさの芯） */
+.sessionCard::after{
+  content:"";
+  position:absolute;
+  inset: 2px;                   /* 枠の内側に1本入れる */
+  border-radius: calc(18px - 2px);
+  pointer-events:none;
+
+  border: 1px solid rgba(255,255,255,.08);  /* ← “白金の線”を細く弱く */
+
+  /* これを強くすると塗ってる感が出やすいので弱め固定 */
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -1px 0 rgba(120,80,20,.18);
+
+  opacity: .9;
+}
+
+
+.sessionCard {
+  margin: 0 0 14px;  /* ←左右marginは消す */
+}
+
+.homeListArea {
+  padding: 0 16px;
+}
+
+/* =========================================================
+   Home session card: 中身のテクスチャだけ差し替え（外枠は維持）
+   ========================================================= */
+
+/* カードの中身をテクスチャで“うっすら”汚す（ボタンっぽさ回避） */
+.sessionCard::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+
+  /* ⑤の画像に差し替え */
+  background-image: url("/card-tex-05.png");
+  background-size: cover;
+  background-position: center;
+
+  /* ボタンに見えない程度に弱く */
+  opacity: 0.18;
+
+  /* ここが肝：ボタンのoverlayより“柔らかい”馴染み方 */
+  mix-blend-mode: soft-light;
+
+  /* ちょいガラス感（強すぎたら消してOK） */
+  filter: contrast(1.05) saturate(0.95);
+
+  /* 枠線より下、本文より上に置く */
+  z-index: 0;
+}
+
+/* カード中の本文はテクスチャより前に出す */
+.sessionCard > *{
+  position: relative;
+  z-index: 1;
+}
+
+/* もし外枠が ::before で作られているなら、それは一番上に固定 */
+.sessionCard::before{
+  z-index: 2;
+}
+
+.sessionTop { position: relative; z-index: 2; }
+
+.sessionTitleRow{
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sessionTitle{
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: .04em;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sessionMode{
+  flex: 0 0 auto;
+  font-size: 12px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(198,168,90,.35);
+  background: rgba(0,0,0,.18);
+  color: rgba(238,230,210,.92);
+}
+
+.sessionMetaRow{
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  color: rgba(215,208,188,.78);
+  font-size: 12px;
+}
+
+.sessionDot{ opacity: .55; }
+.sessionDate{ opacity: .9; }
+.sessionGames{ opacity: .9; }
+
+/* Homeのセッションカード：右側アクション列 */
+.sessionActions{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 0 0 auto;
+  align-items: stretch; /* 縦ボタン同じ幅にする */
+}
+
+/* セッションカード内のアクションボタンだけ “フル幅” を無効化して小さく */
+.sessionCard .btn.miniAction{
+  width: auto;          /* ← これが効く */
+  min-width: 110px;     /* 好みで調整 */
+  padding: 10px 12px;   /* 小さめ */
+  border-radius: 14px;
+  font-size: 14px;
+}
+
+/* スマホの @media で .btn{width:100%} が当たるのを上書き */
+@media (max-width: 820px){
+  .sessionCard .btn.miniAction{
+    width: auto;
+  }
+}
+
+/* カード内を「左本文 + 右ボタン」に */
+.sessionRow{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* 左側は縮んでOK、右のボタン分を避ける */
+.sessionMain{
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* 右：縦ボタン */
+.sessionActions{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 0 0 auto;
+  align-items: flex-end; /* 右寄せ */
+}
+
+/* ここで「btnが全幅」問題を上書きする */
+.sessionActions .btn{
+  width: auto !important;     /* まず全幅を無効化 */
+  min-width: 88px;            /* 好みで調整 */
+}
+
+/* 小さめボタンの見た目 */
+.miniAction{
+  padding: 10px 12px;
+  font-size: 14px;
+  border-radius: 12px;
 }

@@ -27,19 +27,35 @@ body {
   position: fixed;
   inset: 0;
   z-index: 0;
-  background:
-    radial-gradient(1200px 800px at 50% 20%, rgba(255,255,255,0.25), transparent 60%),
-    linear-gradient(180deg, #19a7ae, #0e7f86);
+
+  /* 背景画像（和柄） */
+  background-image: url("/bg-wagara.png");
+
+  /* 画面にフィット */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
   pointer-events: none;
 }
 
+
+/* 暗いビネット + うっすら粒状っぽい縞を擬似的に */
 .homeBgLayer::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.08);
+
+  /* 読みやすさ用の暗幕（上品なビネット） */
+  background:
+    radial-gradient(1200px 900px at 50% 35%, rgba(0,0,0,0.05), rgba(0,0,0,0.65)),
+    rgba(0,0,0,0.15);
+
   pointer-events: none;
 }
+
+
+
 
 .homeFg {
   position: relative;

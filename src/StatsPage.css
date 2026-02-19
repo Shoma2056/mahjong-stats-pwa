@@ -1,0 +1,250 @@
+/* =========================================================
+   StatsPage.css（このページだけで完結）
+   ========================================================= */
+
+.statsPage {
+  position: relative;
+  min-height: 100vh;
+  color: #eaf6f3;
+}
+
+/* 背景（Playersと同じでOK） */
+.statsBgLayer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+
+  background-image: url("/bg_players.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  pointer-events: none;
+}
+
+/* コンテンツ */
+.statsInner {
+  position: relative;
+  z-index: 1;
+  padding: 16px 14px 24px;
+}
+
+/* タイトル */
+.statsHeader {
+  position: relative;
+  margin-top: 2.5vh;
+}
+
+.statsTitle {
+  margin: 0;
+  text-align: center;
+
+  font-family: "Shippori Mincho", serif;
+  font-size: 44px;
+  font-weight: 600;
+
+  background: url("/gold-texture2.png");
+  background-size: cover;
+  background-position: center;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
+  letter-spacing: 0.08em;
+  line-height: 1;
+
+  text-shadow: 0 6px 10px rgba(0,0,0,.18);
+}
+
+/* タイトル下の飾り線（理想寄せ） */
+.statsTitleDivider {
+  position: relative;
+  margin: 10px auto 12px;
+  width: 78%;
+  height: 1.3px;
+
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(212,175,55,0.55),
+    rgba(212,175,55,0.95),
+    rgba(212,175,55,0.55),
+    transparent
+  );
+}
+
+/* メタ + 戻る */
+.statsMetaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  padding: 6px 2px 2px;
+}
+
+.statsMeta {
+  font-size: 13px;
+  color: rgba(238,230,210,0.95);
+  letter-spacing: .01em;
+}
+
+/* 戻る（横長ボタン） */
+/* 戻るボタン（Playersと同じ） */
+.statsBackBtn {
+  position: absolute;
+  left: 0;
+  top: 0;
+
+  font-family: "Zen Kaku Gothic New", serif;
+  font-size: 12px;
+  font-weight: 500;
+
+  padding: 6px 14px;
+
+  background-image: url("/ui-texture-dark.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  border: 1px solid rgba(212, 175, 55, 0.6);
+  border-radius: 9px;
+
+  color: rgba(238,230,210,1);
+  cursor: pointer;
+
+  box-shadow:
+    0 4px 10px rgba(0,0,0,.25),
+    inset 0 1px 0 rgba(255,255,255,.15);
+
+  transition: all .15s ease;
+}
+
+.statsBackBtn:active {
+  transform: translateY(1px);
+  opacity: 0.8;
+}
+
+
+/* フィルター4ボタン */
+.statsFilters {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.statsFilterBtn {
+  font-family: "Zen Kaku Gothic New", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+
+  padding: 10px 8px;
+
+  background-image: url("/ui-texture-dark.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  border: 1px solid rgba(212,175,55,0.35);
+  border-radius: 14px;
+
+  color: rgba(238,230,210,0.88);
+  cursor: pointer;
+
+  box-shadow:
+    0 10px 18px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.08);
+
+  transition: transform .08s ease, opacity .12s ease, filter .12s ease;
+}
+.statsFilterBtn:active { transform: translateY(1px); opacity: .92; }
+
+.statsFilterBtn.isActive {
+  border-color: rgba(212,175,55,0.75);
+  filter: brightness(1.06);
+}
+
+/* セクション区切り（理想の薄い線） */
+.statsSectionDivider {
+  margin: 14px 0;
+  height: 1px;
+  background: rgba(212,175,55,0.35);
+  opacity: 0.55;
+}
+
+/* セクション見出し */
+.statsH2 {
+  margin: 0 0 10px;
+  font-family: "Shippori Mincho", serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: rgba(238,230,210,1);
+  letter-spacing: .02em;
+}
+
+.statsSmall {
+  font-size: 13px;
+  color: rgba(238,230,210,0.9);
+}
+
+/* テーブル */
+.statsTableWrap {
+  border-radius: 14px;
+  border: 1px solid rgba(212,175,55,0.28);
+
+  background-image:
+    linear-gradient(rgba(0,0,0,0.38), rgba(0,0,0,0.38)),
+    url("/ui-texture-dark.png");
+  background-size: cover;
+  background-position: center;
+
+  overflow: hidden;
+}
+
+.statsTableWrap.wide {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.statsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  color: rgba(238,230,210,0.95);
+}
+
+.statsTable th,
+.statsTable td {
+  padding: 10px 10px;
+  border-bottom: 1px solid rgba(212,175,55,0.22);
+  white-space: nowrap;
+}
+
+.statsTable thead th {
+  font-weight: 700;
+  color: rgba(238,230,210,1);
+  background: rgba(0,0,0,0.18);
+}
+
+.statsTable td.name {
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+
+.statsTable td.num,
+.statsTable th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.statsTable td.strong {
+  font-weight: 800;
+}
+
+/* ちょい詰め（小画面） */
+@media (max-width: 420px) {
+  .statsTitle { font-size: 40px; }
+  .statsFilters { gap: 8px; }
+  .statsFilterBtn { font-size: 12px; padding: 9px 6px; }
+}

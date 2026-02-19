@@ -1,0 +1,416 @@
+/* =========================================================
+   PlayersPage.css（このページだけで見た目を完結させる）
+   - styles.css は触らない
+   - 既存 .card .kv .btn の影響は .playersPage 配下で上書き
+   ========================================================= */
+
+.playersPage {
+  position: relative;
+  min-height: 100vh;
+  color: #eaf6f3;
+}
+
+/* ✅ 全画面背景 */
+.playersBgLayer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+
+  background-image: url("/bg_players.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  pointer-events: none;
+}
+
+/* ✅ 中身は背景より前に出す */
+.playersPage > *:not(.playersBgLayer) {
+  position: relative;
+  z-index: 1;
+}
+
+/* ヘッダー：理想の「枠＋装飾」っぽさ */
+.playersPage .kv {
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.playersPage h2 {
+  margin: 0;
+}
+
+.playersHeader {
+  position: relative;
+  margin-top: 3vh;
+  margin-bottom: 16px;
+}
+
+/* 戻るボタン（左上・小さく） */
+.playersBackBtn {
+  position: absolute;
+  left: 0;
+  top: 0;
+
+  font-family: "Zen Kaku Gothic New", serif;
+  font-size: 12px;
+  font-weight: 500;
+
+  padding: 6px 12px;
+
+ background-image: url("/ui-texture-dark.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  border: 1px solid rgba(212, 175, 55, 0.6); /* 金枠 */
+  border-radius: 9px;
+
+  padding: 6px 14px;
+
+  color: rgba(238,230,210,1); /* 金文字 */
+  cursor: pointer;
+
+  box-shadow:
+    0 4px 10px rgba(0,0,0,.25),
+    inset 0 1px 0 rgba(255,255,255,.15);
+
+  transition: all .15s ease;
+}
+
+.playersBackBtn:active {
+  transform: translateY(1px);
+  opacity: 0.8;
+}
+
+
+/* タイトル中央配置 */
+.playersTitle {
+  text-align: center;
+}
+
+
+.playersTitle {
+  margin: 6vh 0 16px;
+  text-align: center;
+
+  font-family: "Shippori Mincho", serif;
+  font-size: 54px;
+  font-weight: 600;
+
+  background: url("/gold-texture2.png");
+  background-size: cover;
+  background-position: center;
+
+  -webkit-background-clip: text;
+  background-clip: text;
+
+  color: transparent;
+
+  letter-spacing: 0.05em;
+  line-height: 1;
+
+  text-shadow:
+    0 6px 10px rgba(0,0,0,.18);
+}
+
+/* タイトル下の装飾ライン */
+.playersTitleDivider {
+  position: relative;
+  margin: 14px auto 24px;
+  width: 70%;
+  height: 1.3px;
+
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(212,175,55,0.6),
+    rgba(212,175,55,0.9),
+    rgba(212,175,55,0.6),
+    transparent
+  );
+}
+
+/* 既存 .btn をこのページだけ小さく・統一 */
+.playersPage .btn {
+  appearance: none;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.20);
+  color: #eaf6f3;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+
+  box-shadow:
+    0 6px 16px rgba(0,0,0,.25),
+    inset 0 1px 0 rgba(255,255,255,.10);
+
+  transition: transform .08s ease, filter .12s ease, opacity .12s ease;
+}
+.playersPage .btn:active { transform: translateY(1px); }
+.playersPage .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* primary：追加 */
+.playersPage .btn.primary {
+  border-color: rgba(196, 170, 120, .38);
+  background:
+    linear-gradient(180deg, rgba(210, 184, 132, .18), rgba(0,0,0,.18));
+}
+
+/* danger：削除（理想の“右側に小さい”前提のサイズ感） */
+.playersPage .btn.danger {
+  border-color: rgba(255, 110, 110, .35);
+  background:
+    linear-gradient(180deg, rgba(255, 110, 110, .16), rgba(0,0,0,.18));
+}
+
+/* レイアウト：追加フォームと一覧を縦で綺麗に */
+.playersLayout {
+  display: grid;
+  gap: 16px;
+}
+
+/* セクション見出し */
+.playersAdd label,
+.playersList label {
+  display: block;
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: rgba(234, 246, 243, .70);
+  letter-spacing: .02em;
+}
+
+/* 追加：input + 追加ボタンを横並びにする（理想寄せ） */
+.playersAdd {
+  background-image:
+    linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
+    url("/ui-texture-dark.png");
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 8px;
+
+  padding: 16px;
+
+  box-shadow:
+    0 12px 22px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.playersAdd input {
+  width: 100%;
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 12px;
+  color: #eaf6f3;
+  padding: 12px 12px;
+  font-size: 15px;
+  outline: none;
+}
+
+.playersAdd input::placeholder {
+  color: rgba(234, 246, 243, .45);
+}
+/* 入力＋追加 横並び */
+.playersAddRow {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* 入力欄 */
+.playersAddRow input {
+  flex: 1;
+
+  height: 42px;
+  padding: 0 12px;
+
+  font-size: 14px;
+
+  background: rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 10px;
+
+  color: #eaf6f3;
+}
+
+/* 追加ボタン */
+.playersAddBtn {
+  width: 90px;
+  height: 42px;
+
+  font-size: 14px;
+  font-family: "Zen Kaku Gothic New", serif;
+
+  background-image: url("/ui-texture-dark.png");
+  background-size: cover;
+  background-position: center;
+
+  border: 1px solid rgba(212,175,55,0.35);
+  border-radius: 10px;
+
+  color: rgba(238,230,210,1);
+
+  cursor: pointer;
+}
+
+.playersAddBtn:disabled {
+  opacity: 0.5;
+}
+
+
+.playersActions {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* “同名が既にあります” */
+.playersPage .pill {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(0,0,0,.18);
+  color: rgba(234, 246, 243, .78);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* 一覧：各行カード（横長、右に小さい削除） */
+.playersList {
+padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+}
+
+.playersList .small {
+  color: rgba(238,230,210,1);
+  font-size: 12px;
+}
+
+/* TSXで .kv.card を使ってるので、それを“行カード”として上書き */
+.playersList .kv.card {
+  margin-top: 10px !important; /* inline style に勝つ */
+  padding: 12px 12px;
+  border-radius: 14px;
+
+  background-image:
+    linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
+    url("/ui-texture-dark.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* 左側（名前＋日付） */
+.playersList .kv.card > div {
+  min-width: 0;
+}
+
+.playersList .kv.card > div > div:first-child {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+
+.playersList .kv.card > div > .small {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+/* 削除ボタンは小さめ固定 */
+.playersList .btn.danger {
+  padding: 9px 12px;
+  min-width: 64px;
+  border-radius: 12px;
+}
+
+/* スマホでも窮屈なら：さらに詰める */
+@media (max-width: 420px) {
+  .playersPage { padding: 14px 12px 20px; }
+  .playersPage .card { padding: 14px; }
+  .playersPage h2 { font-size: 20px; }
+  .playersList .kv.card > div > div:first-child { font-size: 17px; }
+}
+
+/* 1行カード（名前 + 削除） */
+.playerCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  margin-top: 12px;
+  padding: 14px 16px;
+
+  background-image:
+    linear-gradient(rgba(10, 35, 35, 0.55), rgba(10, 35, 35, 0.55)),
+    url("/ui-texture-dark.png");
+  background-size: cover;
+  background-position: center;
+
+  border: 1.5px solid rgba(212,175,55,0.30);
+  box-shadow:
+    0 10px 18px rgba(0,0,0,.38),
+    inset 0 1px 0 rgba(255,255,255,.06);
+  border-radius: 16px;
+}
+
+/* 名前 */
+.playerName {
+    font-family: "Shippori Mincho", serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: rgba(238,230,210,1);
+  line-height: 1;
+}
+
+/* 削除ボタン（右・小さめ） */
+.playerDeleteBtn {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-family: "Zen Kaku Gothic New", serif;
+
+  background-image:
+    linear-gradient(rgba(70, 10, 10, 0.55), rgba(70, 10, 10, 0.55)),
+    url("/ui-texture-dark.png");
+  background-size: cover;
+  background-position: center;
+
+  border: 1px solid rgba(180, 80, 80, 0.45);
+  border-radius: 12px;
+
+  color: rgba(255,255,255,0.88);
+  cursor: pointer;
+}
+
+.playerDeleteBtn:active {
+  opacity: 0.85;
+}
