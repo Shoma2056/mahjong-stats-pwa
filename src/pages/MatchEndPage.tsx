@@ -2,6 +2,8 @@ import React, { useMemo } from "react";
 import type { Match, Player, Session, WindSeat, Rules, UmaRule, GameMode } from "../types";
 import { buildEndSummary, getRanksWithKichya } from "../logic/mahjong";
 
+import "../MatchEndPage.css";
+
 const windNames = ["東", "南", "西", "北"] as const;
 
 // ---- fallback ----
@@ -184,75 +186,86 @@ export default function MatchEndPage(props: {
   const sessionTotals = useMemo(() => sumSessionTotalPt(s, props.players), [s, props.players]);
 
   return (
-    <div className="card">
-      <div className="kv">
-        <div>
-          <h2>終局</h2>
-          <div className="small">
-            理由：{m.endReason ?? "（不明）"}
-            {end.tieBreakApplied ? " / 同点は起家順で決定" : ""}
-          </div>
+  <div className="endPage">
+    <div className="endPageInner">
+      {/* header */}
+      <header className="endHeader">
+        <h2 className="endTitle">終局</h2>
+
+        <div className="endReason">
+          理由：{m.endReason ?? "（不明）"}
+          {end.tieBreakApplied ? " / 同点は起家順で決定" : ""}
         </div>
-        <div className="row">
-          <button className="btn" onClick={props.onBackHome}>Home</button>
-          <button className="btn" onClick={props.onStats}>スタッツ</button>
+
+        <div className="endTopActions">
+          <button className="btn endNavBtn" onClick={props.onBackHome}>Home</button>
+          <button className="btn endNavBtn" onClick={props.onStats}>スタッツ</button>
         </div>
+      </header>
+
+      <div className="endDivider" />
+
+      {/* results */}
+      <h3 className="endSectionTitle">このゲームの結果</h3>
+
+      <div className={`endResultGrid ${seats.length === 3 ? "is3" : "is4"}`}>
+        {seats.map((seat) => {
+          const isTop = end.rankBySeat[seat] === 1;
+          return (
+            <div key={seat} className={`endResultCard ${isTop ? "isTop" : ""}`}>
+              <div className="endResultHead">
+                <div className="endSeat">
+                  {windNames[seat]}：<span className="endPlayer">{seatName(seat)}</span>
+                </div>
+                <div className="endRank">順位：{end.rankBySeat[seat]}位</div>
+              </div>
+
+              <div className="endScoreBlock">
+                <div className="endScoreLabel">最終点</div>
+                <div className="endScoreValue">{end.finalScoresWithAdjust[seat]}点</div>
+              </div>
+
+              <div className="endPt">{end.ptBySeat[seat]}pt</div>
+            </div>
+          );
+        })}
       </div>
 
-      <hr />
+      <div className="endDivider" />
 
-      <h3>このゲームの結果</h3>
-      <div className={seats.length === 3 ? "grid3" : "grid4"}>
-        {seats.map((seat) => (
-          <div key={seat} className="card">
-            <div style={{ fontWeight: 800 }}>
-              {windNames[seat]}：{seatName(seat)}
-            </div>
-            <div className="small">順位：{end.rankBySeat[seat]}位</div>
-            <div className="kv" style={{ marginTop: 8 }}>
-              <span className="small">最終点</span>
-              <span style={{ fontWeight: 800 }}>{end.finalScoresWithAdjust[seat]}点</span>
-            </div>
-            <div className="kv" style={{ marginTop: 6 }}>
-              <span className="small">&nbsp;</span>
-              <span style={{ fontWeight: 900 }}>{end.ptBySeat[seat]}pt</span>
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* totals */}
+      <h3 className="endSectionTitle">対局トータルpt</h3>
 
-      <hr />
-
-      <h3>対局トータルpt</h3>
-      <div className="small">
-        
-      </div>
-
-      <div style={{ marginTop: 10 }}>
-        <table className="table">
+      <div className="endTableWrap">
+        <table className="endTable">
           <thead>
-            <tr><th>順位</th><th>プレイヤー</th><th>トータルpt</th></tr>
+            <tr>
+              <th>順位</th><th>プレイヤー</th><th>トータルpt</th>
+            </tr>
           </thead>
           <tbody>
             {sessionTotals.map((r, idx) => (
               <tr key={r.playerId}>
                 <td>{idx + 1}</td>
-                <td>{r.name}</td>
-                <td style={{ fontWeight: 800 }}>{r.totalPt}</td>
+                <td className="endTdName">{r.name}</td>
+                <td className="endTdPt">{r.totalPt}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <hr />
+      <div className="endDivider" />
 
-      <div className="row" style={{ gap: 8 }}>
-        <button className="btn" onClick={props.onEdit}>このゲームを修正</button>
-        <button className="btn primary" onClick={props.onNextGame}>次のゲーム</button>
-        <button className="btn danger" onClick={props.onEndSession}>Session終了</button>
-        <button className="btn" onClick={props.onDeleteSession}>Session削除</button>
+      {/* bottom actions */}
+      <div className="endBottomActions">
+        <button className="btn endMiniBtn" onClick={props.onEdit}>このゲームを修正</button>
+        <button className="btn primary endMiniBtn" onClick={props.onNextGame}>次のゲーム</button>
+        <button className="btn danger endMiniBtn" onClick={props.onEndSession}>Session終了</button>
+        <button className="btn endMiniBtn" onClick={props.onDeleteSession}>Session削除</button>
       </div>
     </div>
-  );
+  </div>
+);
+
 }

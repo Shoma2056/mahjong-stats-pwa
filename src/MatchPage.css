@@ -1,0 +1,492 @@
+/* =========================================================
+   MatchPage.css
+   - styles.css は触らない
+   - .matchPage 配下で完結（上書き事故防止）
+   ========================================================= */
+
+.matchPage{
+  position: relative;
+  min-height: 100vh;
+  color: #eaf6f3;
+  padding: 14px 12px 20px;
+}
+
+/* 背景：新規対局と同じ画像を使う（名前は適宜） */
+.matchPage::before{
+  content:"";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: url("/match-bg-01.png") center / cover no-repeat;
+  pointer-events: none;
+}
+
+/* 中身は前面へ */
+.matchPage > *{
+  position: relative;
+  z-index: 1;
+}
+
+/* =========================
+   ベース上書き（このページのみ）
+   ========================= */
+.matchPage .card{
+  border: none;
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.matchPage .kv{
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+/* ボタン：ページ内だけ統一（ゴシック） */
+.matchPage .btn{
+  font-family: "Zen Kaku Gothic New", system-ui, sans-serif;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.20);
+  color: #eaf6f3;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+
+  box-shadow:
+    0 10px 18px rgba(0,0,0,.35),        /* 下影 */
+    inset 0 1px 0 rgba(255,255,255,.10);
+
+  transition: transform .08s ease, opacity .12s ease, filter .12s ease;
+}
+.matchPage .btn:active{ transform: translateY(1px); }
+.matchPage .btn:disabled{ opacity:.45; cursor:not-allowed; }
+
+.matchPage .btn.primary{
+  border-color: rgba(196, 170, 120, .38);
+  background:
+    linear-gradient(180deg, rgba(210, 184, 132, .18), rgba(0,0,0,.18));
+}
+
+.matchPage .btn.danger{
+  border-color: rgba(255, 110, 110, .35);
+  background:
+    linear-gradient(180deg, rgba(255, 110, 110, .16), rgba(0,0,0,.18));
+}
+
+/* チップボタン（ヘッダー右上） */
+.matchPage .btn.chip{
+  padding: 8px 10px;
+  font-size: 12px;
+  border-radius: 999px;
+  background-image:
+    linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)),
+    url("/ui-texture-dark.png");
+  background-size: cover;
+  background-position: center;
+  border-color: rgba(212,175,55,0.28);
+  color: rgba(238,230,210,1);
+}
+
+/* pill */
+.matchPage .pill{
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(0,0,0,.18);
+  color: rgba(234, 246, 243, .85);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* badge */
+.matchPage .badge{
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.18);
+  color: rgba(238,230,210,.92);
+}
+.matchPage .badge.ok{ border-color: rgba(120, 220, 170, .25); }
+.matchPage .badge.info{ border-color: rgba(120, 170, 220, .25); }
+.matchPage .badge.danger{ border-color: rgba(255, 110, 110, .28); }
+
+/* =========================
+   ヘッダー
+   ========================= */
+.matchWrap{
+  display: grid;
+  gap: 14px;
+}
+
+.matchHeader{
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  padding: 16px 16px 14px;
+
+  background-image:
+    linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)),
+    url("/ui-texture-dark.png");
+  background-size: cover;
+  background-position: center;
+
+  border: 1px solid rgba(212,175,55,0.28);
+
+  box-shadow:
+    0 18px 32px rgba(0,0,0,.55),
+    0 6px 14px rgba(0,0,0,.35);
+}
+
+.matchHeaderTop{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.matchTitle{
+  font-family: "Shippori Mincho", serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  color: rgba(238,230,210,1);
+}
+
+.matchHeaderBtns{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.matchPage .small{
+  color: rgba(215,208,188,.82);
+  font-size: 12px;
+}
+
+/* =========================
+   卓：2x2 + 結果（下段全幅）
+   ========================= */
+.tableGrid2x2{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.tableCell{ min-width: 0; }
+
+.tableResult{
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+/* =========================
+   席カード
+   ========================= */
+.matchPage .seatCard{
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  padding: 14px;
+
+  background-image:
+    linear-gradient(rgba(0,0,0,0.38), rgba(0,0,0,0.38)),
+    url("/ui-texture-dark.png");
+  background-size: cover;
+  background-position: center;
+
+  border: 1px solid rgba(212,175,55,0.26);
+
+  box-shadow:
+    0 16px 26px rgba(0,0,0,.50),
+    0 6px 12px rgba(0,0,0,.30);
+}
+
+.seatHead{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.seatTitle{
+  min-width: 0;
+}
+
+.seatWind{
+  font-family: "Shippori Mincho", serif;
+  font-weight: 700;
+  color: rgba(238,230,210,1);
+}
+
+.seatName{
+  font-family: "Zen Kaku Gothic New", system-ui, sans-serif;
+  font-weight: 700;
+  color: rgba(234,246,243,1);
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.seatBadges{
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* 点数 */
+.seatScore{
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(0,0,0,.26);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.seatScoreNum{
+  font-family: "Zen Kaku Gothic New", system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  color: rgba(238,230,210,1);
+}
+
+/* セクション */
+.seatSection{
+  margin-top: 10px;
+}
+
+.seatLabel{
+  font-size: 12px;
+  color: rgba(215,208,188,.82);
+  margin-bottom: 6px;
+}
+
+/* 副露：5ボタン */
+.furoGrid{
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+.matchPage .btn.mini{
+  padding: 9px 0;
+  font-size: 13px;
+  border-radius: 12px;
+}
+
+/* 立直 */
+.matchPage .btn.miniWide{
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 13px;
+  border-radius: 12px;
+}
+
+/* =========================
+   結果オープンカード
+   ========================= */
+.resultOpenCard{
+  border-radius: 18px;
+  padding: 16px;
+
+  background-image:
+    linear-gradient(rgba(0,0,0,0.32), rgba(0,0,0,0.32)),
+    url("/ui-texture-dark.png");
+  background-size: cover;
+  background-position: center;
+
+  border: 1px solid rgba(212,175,55,0.30);
+  box-shadow:
+    0 18px 30px rgba(0,0,0,.55),
+    0 6px 12px rgba(0,0,0,.35);
+}
+
+.resultOpenTop{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.resultTitle{
+  font-family: "Shippori Mincho", serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(238,230,210,1);
+}
+
+.resultOpenHint{
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* =========================
+   結果入力モーダル（フルスクリーン）
+   ========================= */
+.resultModal{
+  position: fixed;
+  inset: 14px;
+  z-index: 20;
+  overflow: auto;
+
+  border-radius: 18px;
+  padding: 16px;
+
+  background:
+    linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.55)),
+    url("/ui-texture-dark.png") center / cover no-repeat;
+
+  border: 1px solid rgba(212,175,55,0.30);
+  box-shadow: 0 22px 44px rgba(0,0,0,.70);
+}
+
+/* タブ */
+.tabs.compact{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.tab{
+  user-select: none;
+  text-align: center;
+  padding: 10px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.22);
+  font-size: 13px;
+  color: rgba(234,246,243,.88);
+}
+.tab.active{
+  border-color: rgba(212,175,55,.32);
+  background:
+    linear-gradient(180deg, rgba(210, 184, 132, .18), rgba(0,0,0,.18));
+  color: rgba(238,230,210,1);
+}
+
+/* フォーム2〜3列 */
+.resultFormGrid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.field label{
+  display:block;
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: rgba(215,208,188,.82);
+}
+
+.matchPage input,
+.matchPage select{
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.35);
+  color: rgba(234,246,243,1);
+  outline: none;
+}
+
+/* プリセットボタン */
+.presetGrid{
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+.matchPage .btn.preset{
+  padding: 10px 0;
+  font-size: 12px;
+  border-radius: 12px;
+}
+
+/* =========================
+   局履歴 / 点数修正 モーダル
+   ========================= */
+.historyModal{
+  position: fixed;
+  inset: 14px;
+  overflow: auto;
+  z-index: 18;
+  max-width: 760px;
+  margin: 0 auto;
+
+  border-radius: 18px;
+  padding: 16px;
+
+  background:
+    linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.55)),
+    url("/ui-texture-dark.png") center / cover no-repeat;
+
+  border: 1px solid rgba(212,175,55,0.30);
+  box-shadow: 0 22px 44px rgba(0,0,0,.70);
+}
+
+.adjustModal{
+  position: fixed;
+  inset: 14px;
+  z-index: 18;
+  max-width: 760px;
+  margin: 0 auto;
+  overflow: auto;
+
+  border-radius: 18px;
+  padding: 16px;
+
+  background:
+    linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.55)),
+    url("/ui-texture-dark.png") center / cover no-repeat;
+
+  border: 1px solid rgba(212,175,55,0.30);
+  box-shadow: 0 22px 44px rgba(0,0,0,.70);
+}
+
+.historyItem{
+  border-radius: 16px;
+  padding: 14px;
+
+  background:
+    linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.35)),
+    url("/ui-texture-dark.png") center / cover no-repeat;
+
+  border: 1px solid rgba(212,175,55,0.22);
+  box-shadow: 0 14px 22px rgba(0,0,0,.45);
+}
+
+/* =========================
+   スマホ微調整
+   ========================= */
+@media (max-width: 420px){
+  .matchPage{ padding: 12px 10px 18px; }
+
+  .matchTitle{ font-size: 16px; }
+  .matchHeader{ padding: 14px; }
+
+  .tableGrid2x2{ gap: 10px; }
+
+  .matchPage .seatCard{ padding: 12px; }
+  .seatScoreNum{ font-size: 17px; }
+
+  .presetGrid{ grid-template-columns: repeat(4, 1fr); }
+
+  .resultFormGrid{ grid-template-columns: 1fr; }
+}

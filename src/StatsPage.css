@@ -40,7 +40,7 @@
   text-align: center;
 
   font-family: "Shippori Mincho", serif;
-  font-size: 44px;
+  font-size: 14px;
   font-weight: 600;
 
   background: url("/gold-texture2.png");
@@ -190,7 +190,7 @@
 
 /* テーブル */
 .statsTableWrap {
-  border-radius: 14px;
+  border-radius: 5px;
   border: 1px solid rgba(212,175,55,0.28);
 
   background-image:

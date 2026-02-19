@@ -155,108 +155,107 @@ export default function Home(props: {
   type="button"
   role="tab"
   aria-selected={mode === "archive"}
-                    className={mode === "archive" ? "homeTab active" : "homeTab"}
-                    onClick={() => setMode("archive")}
-                  >
-                    過去 <span className="homeTabCount">{archivedSessions.length}</span>
-                  </button>
-                </div>
+  className={mode === "archive" ? "homeTab active" : "homeTab"}
+  onClick={() => setMode("archive")}
+  >
+  過去 <span className="homeTabCount">{archivedSessions.length}</span>
+  </button>
+  </div>
 
-                <div className="small" style={{ lineHeight: 1.6 }}></div>
-              </div>
+  <div className="small" style={{ lineHeight: 1.6 }}></div>
+  </div>
 
-              {/* 右：一覧（モードで切替） */}
-              <div
-                className="homeListArea"
-                style={{ flex: "2 1 520px", minWidth: 320, padding: "0 16px" }}
-              >
-                <div className="kv sectionHeader">
-                  <div>
-                    <h2 className="sectionTitle">{modeTitle}</h2>
-                  </div>
+  {/* 右：一覧（モードで切替） */}
+  <div
+  className="homeListArea"
+  style={{ flex: "2 1 520px", minWidth: 320, padding: "0 16px" }}
+  >
+  <div className="kv sectionHeader">
+  <div>
+  <h2 className="sectionTitle">{modeTitle}</h2>
+  </div>
 
-                  <div className="small sectionCount" style={{ textAlign: "right" }}>
-                    {viewSessions.length} 件
-                  </div>
-                </div>
+  <div className="small sectionCount" style={{ textAlign: "right" }}>
+  {viewSessions.length} 件
+  </div>
+  </div>
 
-                {viewSessions.length === 0 ? (
-                  <div
-                    className="card"
-                    style={{
+  {viewSessions.length === 0 ? (
+  <div
+  className="card"
+  style={{
                       marginTop: 14,
                       padding: 18,
                       opacity: 0.92,
                       textAlign: "center",
-                    }}
-                  >
-                    <div style={{ fontWeight: 800, marginBottom: 6 }}>
-                      {mode === "active" ? "進行中の対局はありません" : "過去の対局はありません"}
-                    </div>
-                    <div className="small" style={{ lineHeight: 1.6 }}>
-                      {mode === "active"
-                        ? "「新規対局を作成」から開始できます。"
-                        : "終了したSessionがここに表示されます。"}
-                    </div>
-                  </div>
-                ) : (
-                  viewSessions.map((s) => {
-                    const name = s.participantNames?.join(" / ") || "Session";
-                    const gm = gameModeLabel((s as any).rules?.gameMode);
-                    const date = s.dateKey || fmtDateOnly(s.createdAt);
-                    const labelForDelete = `${date || ""}：${name}`;
-                    const label = `${name}（${gm}） ${date}`;
+  }}
+  >
+  <div style={{ fontWeight: 800, marginBottom: 6 }}>
+  {mode === "active" ? "進行中の対局はありません" : "過去の対局はありません"}
+  </div>
+  <div className="small" style={{ lineHeight: 1.6 }}>
+  {mode === "active"
+  ? "「新規対局を作成」から開始できます。"
+  : "終了したSessionがここに表示されます。"}
+  </div>
+  </div>
+  ) : (
+  viewSessions.map((s) => {
+  const name = s.participantNames?.join(" / ") || "Session";
+  const gm = gameModeLabel((s as any).rules?.gameMode);
+  const date = s.dateKey || fmtDateOnly(s.createdAt);
+  const labelForDelete = `${date || ""}：${name}`;
+  const label = `${name}（${gm}） ${date}`;
 
-                    return (
-                      <div key={s.id} className="card sessionCard">
+  return (
+  <div key={s.id} className="card sessionCard">
   <div className="kv sessionRow">
-    {/* 左：情報 */}
-    <div className="sessionMain">
-      <div className="sessionTop">
-        <div className="sessionTitleRow">
-          <div className="sessionTitle">{name}</div>
-          <span className="sessionMode">{gm}</span>
-        </div>
+  {/* 左：情報 */}
+  <div className="sessionMain">
+  <div className="sessionTop">
+  <div className="sessionTitleRow">
+  <div className="sessionTitle">{name}</div>
+  <span className="sessionMode">{gm}</span>
+  </div>
 
-        <div className="sessionMetaRow">
-          <span className="sessionDate">{date}</span>
-          <span className="sessionDot">・</span>
-          <span className="sessionGames">{s.games.length}半荘</span>
-          <span className="sessionDot">・</span>
-          {s.ended ? <span className="badge ok">終了</span> : <span className="badge info">進行中</span>}
-        </div>
-      </div>
+  <div className="sessionMetaRow">
+  <span className="sessionDate">{date}</span>
+  <span className="sessionDot">・</span>
+  <span className="sessionGames">{s.games.length}半荘</span>
+  <span className="sessionDot">・</span>
+  {s.ended ? <span className="badge ok">終了</span> : <span className="badge info">進行中</span>}
+  </div>
+  </div>
 
-      {s.ended && s.endReason && <div className="small">終了理由: {s.endReason}</div>}
-    </div>
+  </div>
 
-    {/* 右：ボタン（縦） */}
-    <div className="sessionActions">
-      <button className="btn primary miniAction" onClick={() => props.onOpenSession(s.id)}>
-        開く
-      </button>
-      <button className="btn danger miniAction" onClick={() => handleDelete(s.id, label)}>
-        削除
-      </button>
-    </div>
+  {/* 右：ボタン（縦） */}
+  <div className="sessionActions">
+  <button className="btn primary miniAction" onClick={() => props.onOpenSession(s.id)}>
+  開く
+  </button>
+  <button className="btn danger miniAction" onClick={() => handleDelete(s.id, label)}>
+  削除
+  </button>
+  </div>
   </div>
 
 
-                        {/* optional: 終了理由 */}
-                        {s.ended && s.endReason ? (
-                          <div className="small" style={{ marginTop: 10 }}>
-                            終了理由: {s.endReason}
-                          </div>
-                        ) : null}
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+  {/* optional: 終了理由 */}
+  {s.ended && s.endReason ? (
+  <div className="small" style={{ marginTop: 10 }}>
+  終了理由: {s.endReason}
+  </div>
+  ) : null}
+  </div>
+  );
+  })
+  )}
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
 
       {/* 更新履歴モーダル（最小実装） */}
       {showChangelog && (

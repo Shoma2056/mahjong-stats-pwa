@@ -1,4 +1,6 @@
+// MatchPage.tsx
 import React, { useMemo, useState, useEffect } from "react";
+import "../MatchPage.css";
 import type {
   AdjustmentLog,
   KyokuAction,
@@ -278,7 +280,6 @@ export default function MatchPage(props: {
     const { updatedMatch } = computeNextFromInput({ match: m, action, result });
     props.onPersist(updatedMatch);
 
-    // 確定したらフォームは閉じてOK（入力はリセット）
     setShowResult(false);
     resetInputs();
 
@@ -324,7 +325,6 @@ export default function MatchPage(props: {
       if (typeof (log.result as any).uraCount === "number") setUraCount(String((log.result as any).uraCount));
     }
 
-    // 編集時は結果入力を開く
     setShowResult(true);
   }
 
@@ -342,7 +342,6 @@ export default function MatchPage(props: {
     const updated = props.onRecompute({ ...m, logs, ended: false, endReason: undefined });
     props.onPersist(updated);
 
-    // 編集反映後もフォームは閉じてOK（入力はリセット）
     setShowResult(false);
     setEditIndex(null);
     resetInputs();
@@ -409,7 +408,6 @@ export default function MatchPage(props: {
     };
   }, [m.currentRound, m.currentRiichiPot, orderState, act]);
 
-  // 東北 / 南西 / 結果 へ配置
   const seatLayout: { key: string; seat: WindSeat }[] = [
     { key: "east", seat: 0 },
     { key: "north", seat: 3 },
@@ -479,376 +477,345 @@ export default function MatchPage(props: {
     );
   }
 
-  // 結果カードの表示テキスト（入力途中が分かるように軽く）
   const resultHint = useMemo(() => {
     if (tab === "draw") return "流局（テンパイ選択）";
     if (tab === "ron") return ronPay ? `ロン ${ronPay}` : "ロン";
-    // tsumo
     if (winner === m.currentDealer) return oyaAll ? `親ツモ ${oyaAll}` : "親ツモ";
     return (koPay || oyaPay) ? `子ツモ ${koPay || "?"}-${oyaPay || "?"}` : "子ツモ";
   }, [tab, ronPay, winner, m.currentDealer, oyaAll, koPay, oyaPay]);
 
-  // ==============================
-  // Render
-  // ==============================
   return (
-    <div className="matchWrap">
-      {/* 上部ヘッダー（供託のみ） */}
-      <div className="card matchHeader">
-        <div className="matchHeaderTop">
-          <div className="matchTitle">{summary.header}</div>
+    <div className="matchPage">
+      <div className="matchWrap">
+        {/* 上部ヘッダー */}
+        <div className="card matchHeader">
+          <div className="matchHeaderTop">
+            <div className="matchTitle">{summary.header}</div>
 
-          <div className="matchHeaderBtns">
-            <button className="btn chip" onClick={() => setShowHistory(true)}>局履歴</button>
-            <button className="btn chip" onClick={() => setShowAdjust(true)}>点数修正</button>
-            <button className="btn chip" onClick={props.onBack}>ホーム</button>
-          </div>
-        </div>
-
-        <div className="small">
-          供託:{m.currentRiichiPot}
-          {gm === "yonma" ? " / 4麻" : gm === "sanma" ? " / 3麻" : " / 4人3麻"}
-        </div>
-      </div>
-
-      {/* 卓レイアウト：東北 / 南西 / 結果 */}
-      <div className="tableGrid2x2">
-        <div className="tableCell"><SeatCard seat={seatLayout[0].seat} /></div>
-        <div className="tableCell"><SeatCard seat={seatLayout[1].seat} /></div>
-        <div className="tableCell"><SeatCard seat={seatLayout[2].seat} /></div>
-        <div className="tableCell"><SeatCard seat={seatLayout[3].seat} /></div>
-
-        {/* 結果（下段 全幅）… ここは「開く」だけにして縦長を回避 */}
-        <div className="tableResult">
-          <div
-            className="card resultCard resultOpenCard"
-            role="button"
-            tabIndex={0}
-            onClick={() => setShowResult(true)}
-            onKeyDown={(e) => { if (e.key === "Enter") setShowResult(true); }}
-            style={{ minWidth: 0 }}
-          >
-            <div className="resultOpenTop">
-              <div className="resultTitle">結果</div>
-              <span className="pill">タップで入力</span>
+            <div className="matchHeaderBtns">
+              <button className="btn chip" onClick={() => setShowHistory(true)}>局履歴</button>
+              <button className="btn chip" onClick={() => setShowAdjust(true)}>点数修正</button>
+              <button className="btn chip" onClick={props.onBack}>ホーム</button>
             </div>
-
-            <div className="small" style={{ marginTop: 6 }}>
-              立直 {summary.riichiCnt}人（供託 +{summary.riichiCnt * 1000}）／供託残 {summary.pot}
-            </div>
-
-            <div className="resultOpenHint">
-              <span className="pill">{resultHint}</span>
-              <span className="pill">入力は保持されます</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ★結果入力：フルスクリーン（閉じても保持） */}
-      {showResult && (
-        <div className="card resultModal">
-          <div className="kv">
-            <h2>結果入力</h2>
-            <button className="btn" onClick={() => setShowResult(false)}>戻る</button>
           </div>
 
           <div className="small">
-            ※「戻る」を押しても入力は消えません。
+            供託:{m.currentRiichiPot}
+            {gm === "yonma" ? " / 4麻" : gm === "sanma" ? " / 3麻" : " / 4人3麻"}
           </div>
-          <hr />
+        </div>
 
-          <div className="tabs compact">
-            <div className={`tab ${tab === "tsumo" ? "active" : ""}`} onClick={() => setTab("tsumo")}>ツモ</div>
-            <div className={`tab ${tab === "ron" ? "active" : ""}`} onClick={() => setTab("ron")}>ロン</div>
-            <div className={`tab ${tab === "draw" ? "active" : ""}`} onClick={() => setTab("draw")}>流局</div>
+        {/* 卓レイアウト */}
+        <div className="tableGrid2x2">
+          <div className="tableCell"><SeatCard seat={seatLayout[0].seat} /></div>
+          <div className="tableCell"><SeatCard seat={seatLayout[1].seat} /></div>
+          <div className="tableCell"><SeatCard seat={seatLayout[2].seat} /></div>
+          <div className="tableCell"><SeatCard seat={seatLayout[3].seat} /></div>
+
+          <div className="tableResult">
+            <div
+              className="card resultCard resultOpenCard"
+              role="button"
+              tabIndex={0}
+              onClick={() => setShowResult(true)}
+              onKeyDown={(e) => { if (e.key === "Enter") setShowResult(true); }}
+              style={{ minWidth: 0 }}
+            >
+              <div className="resultOpenTop">
+                <div className="resultTitle">結果</div>
+                <span className="pill">タップで入力</span>
+              </div>
+
+              <div className="small" style={{ marginTop: 6 }}>
+                立直 {summary.riichiCnt}人（供託 +{summary.riichiCnt * 1000}）／供託残 {summary.pot}
+              </div>
+
+              <div className="resultOpenHint">
+                <span className="pill">{resultHint}</span>
+                <span className="pill">入力は保持されます</span>
+              </div>
+            </div>
           </div>
+        </div>
 
-          {/* ツモ / ロン：コンパクト配置 */}
-          {tab !== "draw" && (
-            <div className="resultFormGrid" style={{ marginTop: 10 }}>
-              <div className="field">
-                <label>和了者</label>
-                <select value={winner} onChange={(e) => setWinner(Number(e.target.value) as WindSeat)}>
-                  {act.map((seat) => (
+        {/* 結果入力：フルスクリーン */}
+        {showResult && (
+          <div className="card resultModal">
+            <div className="kv">
+              <h2>結果入力</h2>
+              <button className="btn" onClick={() => setShowResult(false)}>戻る</button>
+            </div>
+
+            <div className="small">※「戻る」を押しても入力は消えません。</div>
+            <hr />
+
+            <div className="tabs compact">
+              <div className={`tab ${tab === "tsumo" ? "active" : ""}`} onClick={() => setTab("tsumo")}>ツモ</div>
+              <div className={`tab ${tab === "ron" ? "active" : ""}`} onClick={() => setTab("ron")}>ロン</div>
+              <div className={`tab ${tab === "draw" ? "active" : ""}`} onClick={() => setTab("draw")}>流局</div>
+            </div>
+
+            {tab !== "draw" && (
+              <div className="resultFormGrid" style={{ marginTop: 10 }}>
+                <div className="field">
+                  <label>和了者</label>
+                  <select value={winner} onChange={(e) => setWinner(Number(e.target.value) as WindSeat)}>
+                    {act.map((seat) => (
+                      <option key={seat} value={seat}>
+                        {windNames[seat]} {seatDisplayNames[seat]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {tab === "tsumo" && (
+                  <>
+                    {winner === m.currentDealer ? (
+                      <div className="field">
+                        <label>親ツモ：オール</label>
+                        <input value={oyaAll} onChange={(e) => setOyaAll(e.target.value)} placeholder="例：1300" inputMode="numeric" />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="field">
+                          <label>子支払い</label>
+                          <input value={koPay} onChange={(e) => setKoPay(e.target.value)} placeholder="例：1000" inputMode="numeric" />
+                        </div>
+                        <div className="field">
+                          <label>親支払い</label>
+                          <input value={oyaPay} onChange={(e) => setOyaPay(e.target.value)} placeholder="例：2000" inputMode="numeric" />
+                        </div>
+                      </>
+                    )}
+                  </>
+                )}
+
+                {tab === "ron" && (
+                  <>
+                    <div className="field">
+                      <label>放銃者</label>
+                      <select value={loser} onChange={(e) => setLoser(Number(e.target.value) as WindSeat)}>
+                        {act.filter((s) => s !== winner).map((seat) => (
+                          <option key={seat} value={seat}>
+                            {windNames[seat]} {seatDisplayNames[seat]}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="field">
+                      <label>放銃支払い点</label>
+                      <input value={ronPay} onChange={(e) => setRonPay(e.target.value)} placeholder="例：3900" inputMode="numeric" />
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {tab !== "draw" && (
+              <div style={{ marginTop: 10 }}>
+                <label>裏ドラ枚数（立直和了時のみ）</label>
+                <input
+                  value={uraCount}
+                  onChange={(e) => setUraCount(e.target.value)}
+                  placeholder="例：0 / 1 / 2"
+                  inputMode="numeric"
+                />
+                <div className="small">※立直していない和了者の場合、この値は保存されません。</div>
+              </div>
+            )}
+
+            {tab === "tsumo" && (
+              <div style={{ marginTop: 12 }}>
+                <div className="small" style={{ marginBottom: 6, fontWeight: 700 }}>プリセット</div>
+
+                {winner === m.currentDealer ? (
+                  <>
+                    <div className="small" style={{ marginBottom: 6 }}>親ツモ（オール）</div>
+                    <div className="presetGrid">
+                      {PRESET_OYA_TSUMO.map((v) => (
+                        <button
+                          key={v}
+                          className="btn preset"
+                          onClick={() => {
+                            setOyaAll(String(v));
+                            setKoPay("");
+                            setOyaPay("");
+                          }}
+                        >
+                          {v}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="small" style={{ marginBottom: 6 }}>子ツモ（子-親）</div>
+                    <div className="presetGrid">
+                      {PRESET_KO_TSUMO.map((p) => {
+                        const key = `${p.ko}-${p.oya}`;
+                        return (
+                          <button
+                            key={key}
+                            className="btn preset"
+                            onClick={() => {
+                              setKoPay(String(p.ko));
+                              setOyaPay(String(p.oya));
+                              setOyaAll("");
+                            }}
+                          >
+                            {key}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {tab === "ron" && (
+              <div style={{ marginTop: 12 }}>
+                <div className="small" style={{ marginBottom: 6, fontWeight: 700 }}>プリセット（ロン）</div>
+                <div className="presetGrid">
+                  {PRESET_RON.map((v) => (
+                    <button key={v} className="btn preset" onClick={() => setRonPay(String(v))}>
+                      {v}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {tab === "draw" && (
+              <div className="card" style={{ marginTop: 10 }}>
+                <div style={{ fontWeight: 800, marginBottom: 8 }}>テンパイ者（参加者のみ）</div>
+                <div className="grid4">
+                  {([0, 1, 2, 3] as WindSeat[]).map((seat) => {
+                    const disabled = !act.includes(seat);
+                    return (
+                      <button
+                        key={seat}
+                        className={`btn ${tenpai[seat] ? "primary" : ""}`}
+                        disabled={disabled}
+                        onClick={() => {
+                          const next = [...tenpai];
+                          next[seat] = !next[seat];
+                          setTenpai(next);
+                        }}
+                      >
+                        {windNames[seat]} {seatDisplayNames[seat]}{" "}
+                        {disabled ? "（欠け）" : tenpai[seat] ? "（テンパイ）" : "（ノーテン）"}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <hr />
+
+            <div className="row">
+              {editIndex === null ? (
+                <button className="btn primary" disabled={!canConfirm()} onClick={confirm}>
+                  確定（次局へ）
+                </button>
+              ) : (
+                <>
+                  <button className="btn primary" disabled={!canConfirm()} onClick={applyEdit}>
+                    編集を反映（再計算）
+                  </button>
+                  <button className="btn" onClick={cancelEdit}>編集をやめる</button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 局履歴モーダル */}
+        {showHistory && (
+          <div className="card historyModal">
+            <div className="kv">
+              <h2>局履歴</h2>
+              <button className="btn" onClick={() => setShowHistory(false)}>閉じる</button>
+            </div>
+            <div className="small">編集すると、その局以降がすべて再計算されます。</div>
+            <hr />
+            {(m.logs ?? []).length === 0 && <div className="small">まだ局がありません。</div>}
+            {(m.logs ?? []).map((log, i) => (
+              <div key={log.id} className="card historyItem">
+                <div className="kv">
+                  <div>
+                    <div style={{ fontWeight: 800 }}>
+                      {roundLabel(log.roundStart)}（親:{windNames[log.dealer]}）
+                    </div>
+                    <div className="small">
+                      {log.result.type === "draw" ? "流局" : log.result.type === "tsumo" ? "ツモ" : "ロン"}
+                      {typeof (log.result as any).uraCount === "number" ? ` / 裏${(log.result as any).uraCount}` : ""}
+                      {log.ended ? ` / 終局: ${log.endReason}` : ""}
+                    </div>
+                  </div>
+                  <button className="btn primary" onClick={() => openEdit(i)}>編集</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 点数修正モーダル */}
+        {showAdjust && (
+          <div className="card adjustModal">
+            <div className="kv">
+              <h2>点数修正（罰符など）</h2>
+              <button className="btn" onClick={() => setShowAdjust(false)}>閉じる</button>
+            </div>
+            <div className="small">局/本場/供託/親は更新しません。点数だけ動かします（反映後に飛び判定）。</div>
+            <hr />
+            <div className="row">
+              <div style={{ flex: "1 1 200px" }}>
+                <label>対象</label>
+                <select value={adjSeat} onChange={(e) => setAdjSeat(Number(e.target.value) as WindSeat)}>
+                  {([0, 1, 2, 3] as WindSeat[]).map((seat) => (
                     <option key={seat} value={seat}>
                       {windNames[seat]} {seatDisplayNames[seat]}
                     </option>
                   ))}
                 </select>
               </div>
-
-              {tab === "tsumo" && (
-                <>
-                  {winner === m.currentDealer ? (
-                    <div className="field">
-                      <label>親ツモ：オール</label>
-                      <input
-                        value={oyaAll}
-                        onChange={(e) => setOyaAll(e.target.value)}
-                        placeholder="例：1300"
-                        inputMode="numeric"
-                      />
-                    </div>
-                  ) : (
-                    <>
-                      <div className="field">
-                        <label>子支払い</label>
-                        <input
-                          value={koPay}
-                          onChange={(e) => setKoPay(e.target.value)}
-                          placeholder="例：1000"
-                          inputMode="numeric"
-                        />
-                      </div>
-                      <div className="field">
-                        <label>親支払い</label>
-                        <input
-                          value={oyaPay}
-                          onChange={(e) => setOyaPay(e.target.value)}
-                          placeholder="例：2000"
-                          inputMode="numeric"
-                        />
-                      </div>
-                    </>
-                  )}
-                </>
-              )}
-
-              {tab === "ron" && (
-                <>
-                  <div className="field">
-                    <label>放銃者</label>
-                    <select value={loser} onChange={(e) => setLoser(Number(e.target.value) as WindSeat)}>
-                      {act.filter((s) => s !== winner).map((seat) => (
-                        <option key={seat} value={seat}>
-                          {windNames[seat]} {seatDisplayNames[seat]}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="field">
-                    <label>放銃支払い点</label>
-                    <input
-                      value={ronPay}
-                      onChange={(e) => setRonPay(e.target.value)}
-                      placeholder="例：3900"
-                      inputMode="numeric"
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-
-          {/* 裏ドラ（ツモ/ロンのみ） */}
-          {tab !== "draw" && (
-            <div style={{ marginTop: 10 }}>
-              <label>裏ドラ枚数（立直和了時のみ）</label>
-              <input
-                value={uraCount}
-                onChange={(e) => setUraCount(e.target.value)}
-                placeholder="例：0 / 1 / 2"
-                inputMode="numeric"
-              />
-              <div className="small">※立直していない和了者の場合、この値は保存されません。</div>
-            </div>
-          )}
-
-          {/* プリセット：3パターン */}
-          {tab === "tsumo" && (
-            <div style={{ marginTop: 12 }}>
-              <div className="small" style={{ marginBottom: 6, fontWeight: 700 }}>プリセット</div>
-
-              {winner === m.currentDealer ? (
-                <>
-                  <div className="small" style={{ marginBottom: 6 }}>親ツモ（オール）</div>
-                  <div className="presetGrid">
-                    {PRESET_OYA_TSUMO.map((v) => (
-                      <button
-                        key={v}
-                        className="btn preset"
-                        onClick={() => {
-                          setOyaAll(String(v));
-                          setKoPay("");
-                          setOyaPay("");
-                        }}
-                      >
-                        {v}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="small" style={{ marginBottom: 6 }}>子ツモ（子-親）</div>
-                  <div className="presetGrid">
-                    {PRESET_KO_TSUMO.map((p) => {
-                      const key = `${p.ko}-${p.oya}`;
-                      return (
-                        <button
-                          key={key}
-                          className="btn preset"
-                          onClick={() => {
-                            // ★子ツモはペアで一発入力（勝手に同額にはしない）
-                            setKoPay(String(p.ko));
-                            setOyaPay(String(p.oya));
-                            setOyaAll("");
-                          }}
-                        >
-                          {key}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-
-          {tab === "ron" && (
-            <div style={{ marginTop: 12 }}>
-              <div className="small" style={{ marginBottom: 6, fontWeight: 700 }}>プリセット（ロン）</div>
-              <div className="presetGrid">
-                {PRESET_RON.map((v) => (
-                  <button key={v} className="btn preset" onClick={() => setRonPay(String(v))}>
-                    {v}
-                  </button>
-                ))}
+              <div style={{ flex: "1 1 200px" }}>
+                <label>点数（±）</label>
+                <input value={adjDelta} onChange={(e) => setAdjDelta(e.target.value)} placeholder="例：-2000 / +1000" />
+              </div>
+              <div style={{ flex: "2 1 300px" }}>
+                <label>理由（任意）</label>
+                <input value={adjReason} onChange={(e) => setAdjReason(e.target.value)} placeholder="例：罰符 / 卓内裁定" />
               </div>
             </div>
-          )}
-
-          {/* 流局（ここは基本そのまま） */}
-          {tab === "draw" && (
-            <div className="card" style={{ marginTop: 10 }}>
-              <div style={{ fontWeight: 800, marginBottom: 8 }}>テンパイ者（参加者のみ）</div>
-              <div className="grid4">
-                {([0, 1, 2, 3] as WindSeat[]).map((seat) => {
-                  const disabled = !act.includes(seat);
-                  return (
-                    <button
-                      key={seat}
-                      className={`btn ${tenpai[seat] ? "primary" : ""}`}
-                      disabled={disabled}
-                      onClick={() => {
-                        const next = [...tenpai];
-                        next[seat] = !next[seat];
-                        setTenpai(next);
-                      }}
-                    >
-                      {windNames[seat]} {seatDisplayNames[seat]}{" "}
-                      {disabled ? "（欠け）" : tenpai[seat] ? "（テンパイ）" : "（ノーテン）"}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          <hr />
-
-          <div className="row">
-            {editIndex === null ? (
-              <button className="btn primary" disabled={!canConfirm()} onClick={confirm}>
-                確定（次局へ）
+            <hr />
+            <div className="row">
+              <button className="btn primary" onClick={addAdjustment} disabled={!adjDelta || Number(adjDelta) === 0}>
+                反映
               </button>
-            ) : (
-              <>
-                <button className="btn primary" disabled={!canConfirm()} onClick={applyEdit}>
-                  編集を反映（再計算）
-                </button>
-                <button className="btn" onClick={cancelEdit}>編集をやめる</button>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+              <span className="pill">反映先: 現在局の直前（afterKyokuIndex={(m.logs ?? []).length}）</span>
+            </div>
 
-      {/* 局履歴モーダル */}
-      {showHistory && (
-        <div className="card" style={{ position: "fixed", inset: 16, overflow: "auto", zIndex: 10 }}>
-          <div className="kv">
-            <h2>局履歴</h2>
-            <button className="btn" onClick={() => setShowHistory(false)}>閉じる</button>
-          </div>
-          <div className="small">編集すると、その局以降がすべて再計算されます。</div>
-          <hr />
-          {(m.logs ?? []).length === 0 && <div className="small">まだ局がありません。</div>}
-          {(m.logs ?? []).map((log, i) => (
-            <div key={log.id} className="card" style={{ marginBottom: 10 }}>
-              <div className="kv">
-                <div>
-                  <div style={{ fontWeight: 800 }}>
-                    {roundLabel(log.roundStart)}（親:{windNames[log.dealer]}）
+            <hr />
+            <h3>修正履歴</h3>
+            {(m.adjustments ?? []).length === 0 && <div className="small">まだありません。</div>}
+            {(m.adjustments ?? []).slice().reverse().map((a) => (
+              <div key={a.id} className="card historyItem">
+                <div className="kv">
+                  <div style={{ fontWeight: 700 }}>
+                    {windNames[a.seat]} {seatDisplayNames[a.seat]}：{a.delta > 0 ? "+" : ""}{a.delta}
                   </div>
-                  <div className="small">
-                    {log.result.type === "draw" ? "流局" : log.result.type === "tsumo" ? "ツモ" : "ロン"}
-                    {typeof (log.result as any).uraCount === "number" ? ` / 裏${(log.result as any).uraCount}` : ""}
-                    {log.ended ? ` / 終局: ${log.endReason}` : ""}
-                  </div>
+                  <div className="small">{a.reason ?? ""}</div>
                 </div>
-                <button className="btn primary" onClick={() => openEdit(i)}>編集</button>
+                <div className="small">挿入位置: {a.afterKyokuIndex}局目の後</div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* 点数修正モーダル */}
-      {showAdjust && (
-        <div className="card" style={{ position: "fixed", inset: 16, zIndex: 10, maxWidth: 720, margin: "0 auto" }}>
-          <div className="kv">
-            <h2>点数修正（罰符など）</h2>
-            <button className="btn" onClick={() => setShowAdjust(false)}>閉じる</button>
+            ))}
           </div>
-          <div className="small">局/本場/供託/親は更新しません。点数だけ動かします（反映後に飛び判定）。</div>
-          <hr />
-          <div className="row">
-            <div style={{ flex: "1 1 200px" }}>
-              <label>対象</label>
-              <select value={adjSeat} onChange={(e) => setAdjSeat(Number(e.target.value) as WindSeat)}>
-                {([0, 1, 2, 3] as WindSeat[]).map((seat) => (
-                  <option key={seat} value={seat}>
-                    {windNames[seat]} {seatDisplayNames[seat]}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div style={{ flex: "1 1 200px" }}>
-              <label>点数（±）</label>
-              <input value={adjDelta} onChange={(e) => setAdjDelta(e.target.value)} placeholder="例：-2000 / +1000" />
-            </div>
-            <div style={{ flex: "2 1 300px" }}>
-              <label>理由（任意）</label>
-              <input value={adjReason} onChange={(e) => setAdjReason(e.target.value)} placeholder="例：罰符 / 卓内裁定" />
-            </div>
-          </div>
-          <hr />
-          <div className="row">
-            <button className="btn primary" onClick={addAdjustment} disabled={!adjDelta || Number(adjDelta) === 0}>
-              反映
-            </button>
-            <span className="pill">反映先: 現在局の直前（afterKyokuIndex={(m.logs ?? []).length}）</span>
-          </div>
-
-          <hr />
-          <h3>修正履歴</h3>
-          {(m.adjustments ?? []).length === 0 && <div className="small">まだありません。</div>}
-          {(m.adjustments ?? []).slice().reverse().map((a) => (
-            <div key={a.id} className="card" style={{ marginBottom: 8 }}>
-              <div className="kv">
-                <div style={{ fontWeight: 700 }}>
-                  {windNames[a.seat]} {seatDisplayNames[a.seat]}：{a.delta > 0 ? "+" : ""}{a.delta}
-                </div>
-                <div className="small">{a.reason ?? ""}</div>
-              </div>
-              <div className="small">挿入位置: {a.afterKyokuIndex}局目の後</div>
-            </div>
-          ))}
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
