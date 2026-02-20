@@ -83,15 +83,16 @@ export default function NewMatchPage(props: Props) {
     <div className="newMatchBgLayer" />
 
     <header className="newMatchHeader">
-      <h1 className="newMatchTitle">新規対局（ルール設定）</h1>
+      <button className="newMatchHomeBtn" onClick={p.onBack}>
+      {"<"}  戻る
+    </button>
+      <h1 className="newMatchTitle">新規対局</h1>
       <div className="newMatchDivider" />
     </header>
 
-    <button className="newMatchHomeBtn" onClick={p.onBack}>
-      ホーム
-    </button>
+    
 
-    <section className="newMatchSection">
+    <section className="newMatchSection gameModeRow">
       <h3 className="newMatchH3">麻雀種類</h3>
 
       {/* 今のselectは残す（見た目はCSSで） */}
@@ -237,7 +238,7 @@ export default function NewMatchPage(props: Props) {
 
       <div className="newMatchNextWrap">
         <button className="newMatchNextBtn" disabled={!ok} onClick={createSession}>
-          次へ（席決め）
+          席決めへ
         </button>
       </div>
     </section>

@@ -6,11 +6,10 @@
   min-height: 100vh;
   padding: 18px 14px 40px;
 
-  /* ★ここを「新規対局と同じ背景パス」に合わせる */
   --end-bg: url("/bg_newmatch.png");
 
   background:
-    var(--end-bg) center / cover no-repeat;
+    var(--end-bg) center / cover no-repeat fixed;
 
   color: rgba(238,230,210,1);
 }
@@ -309,4 +308,30 @@
   .endTitle{ font-size: 34px; }
   .endResultGrid.is4{ grid-template-columns: 1fr; }
   .endScoreValue{ font-size: 26px; }
+}
+
+/* =========================
+   スマホでも結果カードを 2×2 にする
+   ========================= */
+@media (max-width: 420px){
+  /* ここで1列に潰してたのを無効化して2列維持 */
+  .endResultGrid.is4{ grid-template-columns: 1fr 1fr; }
+
+  /* 2列で詰まるので、間隔とカード内余白を少しだけ縮める */
+  .endResultGrid{ gap: 12px; }
+  .endResultCard{ padding: 12px 12px 10px; }
+
+  /* 文字も少しだけ締める（読みやすさは維持） */
+  .endSeat{ font-size: 15px; }
+  .endScoreValue{ font-size: 24px; }
+  .endPt{ font-size: 16px; }
+}
+
+@media (max-width: 420px){
+  .endResultGrid.is3{
+    grid-template-columns: 1fr 1fr;
+  }
+  .endResultGrid.is3 .endResultCard:last-child{
+    grid-column: 1 / -1;
+  }
 }

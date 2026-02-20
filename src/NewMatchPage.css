@@ -39,7 +39,7 @@
 .newMatchTitle{
   margin: 0;
   font-family: "Shippori Mincho", serif;
-  font-size: 44px;
+  font-size: 34px;
   font-weight: 600;
   letter-spacing: .06em;
 
@@ -77,30 +77,29 @@
    Home/Back Button (plate)
 --------------------------- */
 .newMatchHomeBtn{
-  width: 100%;
-  appearance: none;
-  border: 1px solid rgba(212,175,55,0.35);
-  border-radius: 16px;
 
-  background:
-    linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)),
-    url("/ui-texture-dark.png");
+  font-family: "Zen Kaku Gothic New", serif;
+  font-size: 12px;
+  font-weight: 500;
+
+  padding: 6px 14px;
+
+  background-image: url("/NewMatch-tex.png");
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
 
-  color: rgba(120,170,220,0.95);
-  font-family: "Zen Kaku Gothic New", sans-serif;
-  font-weight: 600;
-  font-size: 16px;
+  border: 1px solid rgba(212, 175, 55, 0.6);
+  border-radius: 9px;
 
-  padding: 14px 12px;
+  color: rgba(238,230,210,1);
   cursor: pointer;
 
   box-shadow:
-    0 10px 18px rgba(0,0,0,.45),
-    inset 0 1px 0 rgba(255,255,255,.10);
+    0 4px 10px rgba(0,0,0,.25),
+    inset 0 1px 0 rgba(255,255,255,.15);
 
-  transition: transform .08s ease, opacity .12s ease;
+  transition: all .15s ease;
 }
 .newMatchHomeBtn:active{ transform: translateY(1px); opacity: .9; }
 
@@ -112,7 +111,7 @@
 .newMatchH3{
   margin: 14px 0 8px;
   font-family: "Shippori Mincho", serif;
-  font-size: 26px;
+  font-size: 20px;
   font-weight: 600;
   color: rgba(238,230,210,1);
 }
@@ -120,7 +119,7 @@
 .newMatchHelp{
   margin: 0 0 10px;
   color: rgba(238,230,210,.78);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 /* ---------------------------
@@ -129,12 +128,12 @@
 .newMatchPage select.ruleSelect{
   width: 100%;
   appearance: none;
-  border-radius: 16px;
+  border-radius: 14px;
   border: 1px solid rgba(212,175,55,0.24);
 
   background:
     linear-gradient(rgba(0,0,0,0.40), rgba(0,0,0,0.40)),
-    url("/ui-texture-dark.png");
+    url("/NewMatch-tex.png");
   background-size: cover;
   background-position: center;
 
@@ -143,7 +142,7 @@
   font-weight: 600;
   font-size: 16px;
 
-  padding: 12px 12px;
+  padding: 6px 12px;
   outline: none;
 
   box-shadow:
@@ -155,29 +154,29 @@
    Player pick grid (2 columns)
 --------------------------- */
 .gameTypeGrid{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  display: flex;
+  flex-wrap: wrap;   /* 横に並んで、溢れたら下へ */
+  gap: 10px;
 }
 
 .gameTypeBtn{
-  width: 100%;
+  width: auto;
   appearance: none;
-  border: 1px solid rgba(212,175,55,0.28);
+  border: 2px solid rgba(212,175,55,0.28);
   border-radius: 16px;
 
   background:
     linear-gradient(rgba(0,0,0,0.32), rgba(0,0,0,0.32)),
-    url("/ui-texture-dark.png");
+    url("/NewMatch-tex.png");
   background-size: cover;
   background-position: center;
 
   color: rgba(238,230,210,0.92);
-  font-family: "Zen Kaku Gothic New", sans-serif;
+  font-family: "Shippori Mincho", sans-serif;
   font-weight: 600;
   font-size: 18px;
 
-  padding: 14px 12px;
+  padding: 8px 16px;
   cursor: pointer;
 
   box-shadow:
@@ -211,13 +210,13 @@
   align-items: center;
   gap: 10px;
 
-  padding: 12px 12px;
+  padding: 6px 12px;
   border-radius: 16px;
   border: 1px solid rgba(212,175,55,0.24);
 
   background:
     linear-gradient(rgba(0,0,0,0.40), rgba(0,0,0,0.40)),
-    url("/ui-texture-dark.png");
+    url("/NewMatch-tex.png");
   background-size: cover;
   background-position: center;
 
@@ -229,7 +228,7 @@
 .ruleLabel{
   font-family: "Zen Kaku Gothic New", sans-serif;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 14px;
   color: rgba(238,230,210,.90);
 }
 
@@ -240,14 +239,14 @@
 
   font-family: "Zen Kaku Gothic New", sans-serif;
   font-weight: 700;
-  font-size: 18px;
+  font-size: 17px;
 
   color: rgba(238,230,210,0.95);
   background: rgba(0,0,0,0.25);
 
   border: 1px solid rgba(255,255,255,.10);
   border-radius: 12px;
-  padding: 10px 10px;
+  padding: 5px 10px;
 
   outline: none;
 }
@@ -275,7 +274,7 @@
 
   background:
     linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)),
-    url("/ui-texture-dark.png");
+    url("/NewMatch-tex.png");
   background-size: cover;
   background-position: center;
 
@@ -324,4 +323,180 @@
 @media (max-width: 420px){
   .newMatchTitle{ font-size: 40px; }
   .ruleRow{ grid-template-columns: 1fr 130px; }
+}
+
+/* =========================================================
+   追記（このままファイルの一番下に貼る）
+   目的：
+   - 「麻雀種類」行を右詰め
+   - 右側の 4麻カード（select）を文字量に合わせて小さく
+   - 右端に寄せる
+   ========================================================= */
+
+/* 麻雀種類：左に見出し、右にカード（右端に寄せる） */
+.newMatchPage .gameModeRow{
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 右詰めの核 */
+  gap: 12px;
+}
+
+/* 見出しの余白を横並び用に調整（縦のときのmarginが邪魔になるため） */
+.newMatchPage .gameModeRow .newMatchH3{
+  margin: 0;                 /* 横並びで上下余白を消す */
+  line-height: 1.1;
+  white-space: nowrap;       /* 折り返し防止 */
+}
+
+/* 麻雀種類の右：4麻カード（select）を小さく＆右端へ */
+.newMatchPage .gameModeRow select.ruleSelect{
+  width: auto;               /* 100%を解除して伸びないようにする */
+  min-width: 120px;          /* 小さくしすぎ防止（好みで110〜140） */
+  max-width: 220px;          /* 変に広がらない保険 */
+  margin-left: auto;         /* 右端に吸着 */
+
+  padding: 6px 12px;         /* 高さは維持しつつ横幅は締まる */
+  font-size: 16px;           /* 文字に対してカードが大きすぎるのを抑える */
+  border-radius: 9px;      /* “カード感”を丸くしてコンパクトに見せる */
+
+  /* 右寄せにした時の見た目を安定させる */
+  text-align: left;          /* iOSで中央寄りに見えるのを避ける（必要なら） */
+}
+
+/* さらに“右詰め感”を出したい場合：コンテンツを右に寄せる */
+.newMatchPage .gameModeRow{
+  width: 100%;
+}
+
+/* 麻雀種類の4麻カード内の文字を中央に */
+.newMatchPage .gameModeRow select.ruleSelect{
+  text-align: center;
+  text-align-last: center; /* iOS/Safari対策（重要） */
+}
+
+/* =========================================================
+   追記：スクロール不要化（縦の余白を詰める）
+   ========================================================= */
+
+/* タイトル周りを少し詰める */
+.newMatchHeader{
+  margin-top: 2px;
+  margin-bottom: 8px;
+}
+.newMatchDivider{
+  margin: 8px auto 0;
+}
+
+/* セクション見出しの上下余白を詰める */
+.newMatchSection{ margin-top: 6px; }
+.newMatchH3{ margin: 10px 0 6px; font-size: 22px; } /* 24→22 */
+.newMatchHelp{ margin: 0 0 8px; font-size: 13px; }  /* 14→13 */
+
+/* セクション間の区切り線の余白を詰める */
+.newMatchDivider.subtle{
+  margin: 12px 0; /* 18→12 */
+}
+
+/* ルール行を少し薄くして高さを削る */
+.ruleList{ margin-top: 8px; gap: 8px; } /* 10→8 */
+.ruleRow{
+  padding: 5px 12px;         /* 6→5（地味に効く） */
+  border-radius: 14px;       /* 16→14（見た目も締まる） */
+}
+
+/* 入力欄も少しだけ高さを削る */
+.ruleRow input,
+.ruleRow select{
+  font-size: 17px;           /* 18→17 */
+  padding: 4px 10px;         /* 5→4 */
+}
+
+/* 下部（注釈〜次へ）の余白を詰める */
+.newMatchNote{ margin-top: 8px; font-size: 12px; }
+.newMatchNextWrap{ margin-top: 10px; }   /* 16→10 */
+.newMatchNextBtn{
+  min-width: 220px;          /* 240→220（横幅も少し締まる） */
+  font-size: 17px;           /* 18→17 */
+  padding: 10px 16px;        /* 12→10 */
+}
+
+
+/* =========================================================
+   Header内：戻る左 / タイトル中央（スタッツ寄せ）
+   ========================================================= */
+
+.newMatchHeader{
+  display: grid;
+  grid-template-columns: auto 1fr auto; /* 左：戻る / 中：タイトル / 右：空き */
+  align-items: center;
+  column-gap: 12px;
+
+  text-align: initial; /* 以前の text-align:center を無効化 */
+}
+
+/* 戻る：左に固定（absoluteは解除） */
+.newMatchHeader .newMatchHomeBtn,
+.newMatchHomeBtn{
+  position: static;
+  justify-self: start;
+  margin: 0; /* 変なズレ防止 */
+}
+
+/* タイトル：中央 */
+.newMatchHeader .newMatchTitle{
+  justify-self: center;
+  text-align: center;
+  margin: 0; /* 念のため */
+}
+
+/* 下の線はタイトルの下でセンターのまま */
+.newMatchHeader .newMatchDivider{
+  grid-column: 1 / -1;
+  margin: 10px auto 0;
+}
+
+.newMatchHeader .newMatchTitle{
+  width: auto;
+}
+
+/* =========================================
+   タイトルを“完全中央”にする
+========================================= */
+
+.newMatchHeader{
+  position: relative;
+}
+
+/* タイトルを画面中央へ固定 */
+.newMatchHeader .newMatchTitle{
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  text-align: center;
+}
+
+/* =========================================
+   headerがキツキツに見えるのを解消（余白を復活）
+========================================= */
+
+.newMatchHeader{
+  position: relative;
+  padding-top: 10px;     /* 上の空白 */
+  padding-bottom: 10px;  /* 下の空白 */
+  min-height: 72px;      /* タイトル分の高さを確保（ここが効く） */
+}
+
+/* タイトル中央固定は維持しつつ、縦位置を少し下げて呼吸させる */
+.newMatchHeader .newMatchTitle{
+  position: absolute;
+  left: 50%;
+  top: 8px;              /* ← 0だと詰まるので少し下げる */
+  transform: translateX(-50%);
+  margin: 0;
+}
+
+/* 線も少し下に */
+.newMatchHeader .newMatchDivider{
+  margin-top: 54px;      /* タイトルの下に来る位置に調整 */
 }

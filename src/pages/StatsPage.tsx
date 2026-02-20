@@ -387,7 +387,7 @@ export default function StatsPage(props: { matches: Match[]; players: Player[]; 
             </div>
 
             <button className="statsBackBtn" onClick={props.onBack}>
-              戻る
+              {"<"}  戻る
             </button>
           </div>
         </header>
