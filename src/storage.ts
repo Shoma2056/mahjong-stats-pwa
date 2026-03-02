@@ -1,4 +1,8 @@
+import { db, ensureAnonAuth } from "./firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { getRoomId } from "./roomLocal";
 import type { Match, Player, Session } from "./types";
+import { onSnapshot } from "firebase/firestore";
 
 const KEY_PLAYERS = "mj_players_v1";
 
@@ -14,30 +18,116 @@ function safeParse<T>(s: string | null, fallback: T): T {
 }
 
 // -------------------- Players --------------------
-export function loadPlayers(): Player[] {
-  return safeParse<Player[]>(localStorage.getItem(KEY_PLAYERS), []);
+export async function loadPlayers(): Promise<Player[]> {
+  const roomId = getRoomId();
+  if (!roomId) return [];
+
+  await ensureAnonAuth();
+  const ref = doc(db, "rooms", roomId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return [];
+
+  const data = snap.data() as any;
+  return (data.players ?? []) as Player[];
 }
-export function savePlayers(players: Player[]) {
-  localStorage.setItem(KEY_PLAYERS, JSON.stringify(players));
+
+export async function savePlayers(players: Player[]) {
+  const roomId = getRoomId();
+  if (!roomId) throw new Error("roomId が未設定です");
+
+  await ensureAnonAuth();
+  const ref = doc(db, "rooms", roomId);
+  await setDoc(ref, { players }, { merge: true });
+}
+
+// -------------------- Players (realtime subscribe) --------------------
+export function subscribePlayers(roomId: string, onChange: (players: Player[]) => void) {
+  if (!roomId) {
+    onChange([]);
+    return () => {};
+  }
+
+  let unsub: (() => void) | null = null;
+  let cancelled = false;
+
+  (async () => {
+    await ensureAnonAuth();
+    if (cancelled) return;
+
+    const ref = doc(db, "rooms", roomId);
+    unsub = onSnapshot(ref, (snap) => {
+      const data = snap.exists() ? (snap.data() as any) : {};
+      onChange((data.players ?? []) as Player[]);
+    });
+  })();
+
+  return () => {
+    cancelled = true;
+    if (unsub) unsub();
+  };
 }
 
 // -------------------- Sessions (new) --------------------
-export function loadSessions(): Session[] {
-  return safeParse<Session[]>(localStorage.getItem(KEY_SESSIONS), []);
+export async function loadSessions(): Promise<Session[]> {
+  const roomId = getRoomId();
+  if (!roomId) return [];
+
+  await ensureAnonAuth();
+  const ref = doc(db, "rooms", roomId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return [];
+
+  const data = snap.data() as any;
+  return (data.sessions ?? []) as Session[];
 }
-export function saveSessions(sessions: Session[]) {
-  localStorage.setItem(KEY_SESSIONS, JSON.stringify(sessions));
+
+export async function saveSessions(sessions: Session[]) {
+  const roomId = getRoomId();
+  if (!roomId) throw new Error("roomId が未設定です");
+
+  await ensureAnonAuth();
+  const ref = doc(db, "rooms", roomId);
+  await setDoc(ref, { sessions }, { merge: true });
 }
-export function upsertSession(session: Session) {
-  const sessions = loadSessions();
-  const idx = sessions.findIndex(s => s.id === session.id);
+
+export async function upsertSession(session: Session) {
+  const sessions = await loadSessions();
+  const idx = sessions.findIndex((s) => s.id === session.id);
   if (idx >= 0) sessions[idx] = session;
   else sessions.unshift(session);
-  saveSessions(sessions);
+  await saveSessions(sessions);
 }
-export function deleteSession(sessionId: string) {
-  const sessions = loadSessions().filter(s => s.id !== sessionId);
-  saveSessions(sessions);
+
+export async function deleteSession(sessionId: string) {
+  const sessions = (await loadSessions()).filter((s) => s.id !== sessionId);
+  await saveSessions(sessions);
+}
+
+// -------------------- Sessions (realtime subscribe) --------------------
+export function subscribeSessions(roomId: string, onChange: (sessions: Session[]) => void) {
+  if (!roomId) {
+    onChange([]);
+    return () => {};
+  }
+
+  let unsub: (() => void) | null = null;
+  let cancelled = false;
+
+  (async () => {
+    await ensureAnonAuth();
+    if (cancelled) return;
+
+    const ref = doc(db, "rooms", roomId);
+    unsub = onSnapshot(ref, (snap) => {
+      const data = snap.exists() ? (snap.data() as any) : {};
+      onChange((data.sessions ?? []) as Session[]);
+    });
+  })();
+
+  return () => {
+    cancelled = true;
+    if (unsub) unsub();
+  };
 }
 
 // -------------------- Legacy matches (keep) --------------------

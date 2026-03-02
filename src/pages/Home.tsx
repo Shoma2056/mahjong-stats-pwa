@@ -59,6 +59,7 @@ export default function Home(props: {
   onOpenSession: (id: string) => void;
   onDeleteSession: (id: string) => void;
   onStats: () => void;
+  onSettings: () => void; // ←追加
 }) {
   const { sessions } = props;
 
@@ -109,6 +110,10 @@ export default function Home(props: {
   <div className="verText">Ver. {APP_VERSION}</div>
   <button className="history-link" onClick={() => setShowChangelog(true)}>
   更新履歴
+  </button>
+
+  <button className="history-link" onClick={props.onSettings}>
+    設定
   </button>
   </div>
 

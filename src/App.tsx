@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-import { loadPlayers, savePlayers, loadSessions, upsertSession, deleteSession } from "./storage";
+import React, { useMemo, useState, useEffect } from "react";
+import { loadPlayers, savePlayers, loadSessions, upsertSession, deleteSession, subscribePlayers, subscribeSessions } from "./storage";
 import type { Match, Player, Session, Rules, WindSeat } from "./types";
 import { uid, recomputeMatchFromScratch } from "./logic/mahjong";
 
@@ -9,6 +9,9 @@ import NewMatchPage from "./pages/NewMatchPage";
 import MatchPage from "./pages/MatchPage";
 import MatchEndPage from "./pages/MatchEndPage";
 import StatsPage from "./pages/StatsPage";
+import SettingsPage from "./pages/SettingsPage";
+
+import { getRoomId, setRoomId, getNick, setNick } from "./roomLocal";
 
 type Route =
   | { name: "home" }
@@ -17,7 +20,8 @@ type Route =
   | { name: "seatSelect"; sessionId: string }
   | { name: "match"; sessionId: string; matchId: string }
   | { name: "end"; sessionId: string; matchId: string }
-  | { name: "stats" };
+  | { name: "stats" }
+  | { name: "settings" };
 
 type PlayerIdBySeat = { ids: string[]; names: string[] };
 
@@ -30,33 +34,47 @@ function todayDateKey(): string {
 }
 
 export default function App() {
+
   const [route, setRoute] = useState<Route>({ name: "home" });
-  const [players, setPlayers] = useState<Player[]>(() => loadPlayers());
-  const [sessions, setSessions] = useState<Session[]>(() => loadSessions());
+  const [players, setPlayers] = useState<Player[]>([]);
+const [sessions, setSessions] = useState<Session[]>([]);
+const [roomId, setRoomIdState] = useState<string>(() => getRoomId());
+const [nick, setNickState] = useState<string>(() => getNick());
+
+// 初回にPlayersをクラウドから読む（roomIdが入ってる前提）
+useEffect(() => {
+  const unsubP = subscribePlayers(roomId, (p) => setPlayers(p));
+  return () => unsubP();
+}, [roomId]);
+
+useEffect(() => {
+  const unsubS = subscribeSessions(roomId, (s) => setSessions(s));
+  return () => unsubS();
+}, [roomId]);
 
   function nav(r: Route) {
     setRoute(r);
   }
 
-  function persistPlayers(next: Player[]) {
-    setPlayers(next);
-    savePlayers(next);
-  }
+  async function persistPlayers(next: Player[]) {
+  setPlayers(next);
+  await savePlayers(next);
+}
 
-  function persistSession(next: Session) {
-    const exists = sessions.some((s) => s.id === next.id);
-    const list = exists ? sessions.map((s) => (s.id === next.id ? next : s)) : [next, ...sessions];
-    setSessions(list);
-    upsertSession(next);
-  }
+  async function persistSession(next: Session) {
+  const exists = sessions.some((s) => s.id === next.id);
+  const list = exists ? sessions.map((s) => (s.id === next.id ? next : s)) : [next, ...sessions];
+  setSessions(list);
+  await upsertSession(next);
+}
 
-  function removeSession(sessionId: string) {
-    setSessions(sessions.filter((s) => s.id !== sessionId));
-    deleteSession(sessionId);
-    if ("sessionId" in route && (route as any).sessionId === sessionId) {
-      setRoute({ name: "home" });
-    }
+async function removeSession(sessionId: string) {
+  setSessions(sessions.filter((s) => s.id !== sessionId));
+  await deleteSession(sessionId);
+  if ("sessionId" in route && (route as any).sessionId === sessionId) {
+    setRoute({ name: "home" });
   }
+}
 
   const activeSession = useMemo(() => {
     if ("sessionId" in route) {
@@ -199,6 +217,7 @@ export default function App() {
           }}
           onDeleteSession={(id) => removeSession(id)}
           onStats={() => nav({ name: "stats" })}
+          onSettings={() => nav({ name: "settings" })}
         />
       )}
 
@@ -253,6 +272,16 @@ export default function App() {
       {route.name === "stats" && (
         <StatsPage matches={matchesForStats} players={players} onBack={() => nav({ name: "home" })} />
       )}
+
+      {route.name === "settings" && (
+  <SettingsPage
+    onBack={() => nav({ name: "home" })}
+    onApply={(r, n) => {
+      setRoomIdState(r);
+      setNickState(n);
+    }}
+  />
+)}
     </div>
   );
 }
