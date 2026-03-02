@@ -40,7 +40,7 @@ function save() {
               <input
                 value={roomId}
                 onChange={(e) => setRoomIdState(e.target.value)}
-                placeholder="例: furuta-mahjong"
+                placeholder="例: mahjong"
                 style={{
                   width: "100%",
                   padding: "10px 12px",
@@ -74,9 +74,7 @@ function save() {
                 <button className="btn primary" onClick={save}>
                   保存
                 </button>
-                <button className="btn" onClick={() => window.location.reload()}>
-                  リロード
-                </button>
+                
               </div>
 
               <div className="small" style={{ marginTop: 10, opacity: 0.8, lineHeight: 1.6 }}>
