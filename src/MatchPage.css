@@ -80,8 +80,8 @@
 
 /* チップボタン（ヘッダー右上） */
 .matchPage .btn.chip{
-  padding: 8px 10px;
-  font-size: 12px;
+  padding: 6px 8px;
+  font-size: 10px;
   border-radius: 999px;
   background-image:
     linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)),
@@ -133,7 +133,7 @@
 .matchPage .matchHeader{
   position: relative;
   overflow: hidden;
-  border-radius: 17px;
+  border-radius: 18px;
   padding: 12px 14px 10px;
 
   background-image:
@@ -153,22 +153,24 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
 }
 
 .matchTitle{
   font-family: "Shippori Mincho", serif;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   letter-spacing: .04em;
   color: rgba(238,230,210,1);
+  white-space: nowrap;   /* ← 1行化 */
 }
 
 .matchHeaderBtns{
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  gap: 6px;
+  flex-wrap: nowrap;     /* ← 折り返さない */
   justify-content: flex-end;
+  align-items: center;
 }
 
 .matchPage .small{
