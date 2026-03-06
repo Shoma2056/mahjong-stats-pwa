@@ -133,8 +133,8 @@
 .matchPage .matchHeader{
   position: relative;
   overflow: hidden;
-  border-radius: 18px;
-  padding: 16px 16px 14px;
+  border-radius: 17px;
+  padding: 12px 14px 10px;
 
   background-image:
     linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)),
