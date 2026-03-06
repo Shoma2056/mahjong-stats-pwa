@@ -735,88 +735,126 @@ export default function MatchPage(props: {
 )}
 
         {/* 局履歴モーダル */}
-        {showHistory && (
-          <div className="card historyModal">
+{showHistory && (
+  <div
+    className="historyModalOverlay"
+    onClick={() => setShowHistory(false)}
+  >
+    <div
+      className="card historyModal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="resultModalHead">
+        <h2 className="resultModalTitle">局履歴</h2>
+        <button
+          className="btn resultCloseBtn"
+          onClick={() => setShowHistory(false)}
+          aria-label="閉じる"
+        >
+          ×
+        </button>
+      </div>
+
+      <div className="small">編集すると、その局以降がすべて再計算されます。</div>
+      <hr />
+
+      <div className="historyModalBody">
+        {(m.logs ?? []).length === 0 && <div className="small">まだ局がありません。</div>}
+        {(m.logs ?? []).map((log, i) => (
+          <div key={log.id} className="card historyItem">
             <div className="kv">
-              <h2>局履歴</h2>
-              <button className="btn" onClick={() => setShowHistory(false)}>閉じる</button>
-            </div>
-            <div className="small">編集すると、その局以降がすべて再計算されます。</div>
-            <hr />
-            {(m.logs ?? []).length === 0 && <div className="small">まだ局がありません。</div>}
-            {(m.logs ?? []).map((log, i) => (
-              <div key={log.id} className="card historyItem">
-                <div className="kv">
-                  <div>
-                    <div style={{ fontWeight: 800 }}>
-                      {roundLabel(log.roundStart)}（親:{windNames[log.dealer]}）
-                    </div>
-                    <div className="small">
-                      {log.result.type === "draw" ? "流局" : log.result.type === "tsumo" ? "ツモ" : "ロン"}
-                      {typeof (log.result as any).uraCount === "number" ? ` / 裏${(log.result as any).uraCount}` : ""}
-                      {log.ended ? ` / 終局: ${log.endReason}` : ""}
-                    </div>
-                  </div>
-                  <button className="btn primary" onClick={() => openEdit(i)}>編集</button>
+              <div>
+                <div style={{ fontWeight: 800 }}>
+                  {roundLabel(log.roundStart)}（親:{windNames[log.dealer]}）
+                </div>
+                <div className="small">
+                  {log.result.type === "draw" ? "流局" : log.result.type === "tsumo" ? "ツモ" : "ロン"}
+                  {typeof (log.result as any).uraCount === "number" ? ` / 裏${(log.result as any).uraCount}` : ""}
+                  {log.ended ? ` / 終局: ${log.endReason}` : ""}
                 </div>
               </div>
-            ))}
+              <button className="btn primary" onClick={() => openEdit(i)}>編集</button>
+            </div>
           </div>
-        )}
+        ))}
+      </div>
+    </div>
+  </div>
+)}
 
         {/* 点数修正モーダル */}
-        {showAdjust && (
-          <div className="card adjustModal">
-            <div className="kv">
-              <h2>点数修正（罰符など）</h2>
-              <button className="btn" onClick={() => setShowAdjust(false)}>閉じる</button>
-            </div>
-            <div className="small">局/本場/供託/親は更新しません。点数だけ動かします（反映後に飛び判定）。</div>
-            <hr />
-            <div className="row">
-              <div style={{ flex: "1 1 200px" }}>
-                <label>対象</label>
-                <select value={adjSeat} onChange={(e) => setAdjSeat(Number(e.target.value) as WindSeat)}>
-                  {([0, 1, 2, 3] as WindSeat[]).map((seat) => (
-                    <option key={seat} value={seat}>
-                      {windNames[seat]} {seatDisplayNames[seat]}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div style={{ flex: "1 1 200px" }}>
-                <label>点数（±）</label>
-                <input value={adjDelta} onChange={(e) => setAdjDelta(e.target.value)} placeholder="例：-2000 / +1000" />
-              </div>
-              <div style={{ flex: "2 1 300px" }}>
-                <label>理由（任意）</label>
-                <input value={adjReason} onChange={(e) => setAdjReason(e.target.value)} placeholder="例：罰符 / 卓内裁定" />
-              </div>
-            </div>
-            <hr />
-            <div className="row">
-              <button className="btn primary" onClick={addAdjustment} disabled={!adjDelta || Number(adjDelta) === 0}>
-                反映
-              </button>
-              <span className="pill">反映先: 現在局の直前（afterKyokuIndex={(m.logs ?? []).length}）</span>
-            </div>
+{showAdjust && (
+  <div
+    className="adjustModalOverlay"
+    onClick={() => setShowAdjust(false)}
+  >
+    <div
+      className="card adjustModal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="resultModalHead">
+        <h2 className="resultModalTitle">点数修正</h2>
+        <button
+          className="btn resultCloseBtn"
+          onClick={() => setShowAdjust(false)}
+          aria-label="閉じる"
+        >
+          ×
+        </button>
+      </div>
 
-            <hr />
-            <h3>修正履歴</h3>
-            {(m.adjustments ?? []).length === 0 && <div className="small">まだありません。</div>}
-            {(m.adjustments ?? []).slice().reverse().map((a) => (
-              <div key={a.id} className="card historyItem">
-                <div className="kv">
-                  <div style={{ fontWeight: 700 }}>
-                    {windNames[a.seat]} {seatDisplayNames[a.seat]}：{a.delta > 0 ? "+" : ""}{a.delta}
-                  </div>
-                  <div className="small">{a.reason ?? ""}</div>
-                </div>
-                <div className="small">挿入位置: {a.afterKyokuIndex}局目の後</div>
-              </div>
-            ))}
+      <div className="small">局/本場/供託/親は更新しません。点数だけ動かします（反映後に飛び判定）。</div>
+      <hr />
+
+      <div className="adjustModalBody">
+        <div className="row">
+          <div style={{ flex: "1 1 200px" }}>
+            <label>対象</label>
+            <select value={adjSeat} onChange={(e) => setAdjSeat(Number(e.target.value) as WindSeat)}>
+              {([0, 1, 2, 3] as WindSeat[]).map((seat) => (
+                <option key={seat} value={seat}>
+                  {windNames[seat]} {seatDisplayNames[seat]}
+                </option>
+              ))}
+            </select>
           </div>
-        )}
+          <div style={{ flex: "1 1 200px" }}>
+            <label>点数（±）</label>
+            <input value={adjDelta} onChange={(e) => setAdjDelta(e.target.value)} placeholder="例：-2000 / +1000" />
+          </div>
+          <div style={{ flex: "2 1 300px" }}>
+            <label>理由（任意）</label>
+            <input value={adjReason} onChange={(e) => setAdjReason(e.target.value)} placeholder="例：罰符 / 卓内裁定" />
+          </div>
+        </div>
+
+        <hr />
+
+        <div className="row">
+          <button className="btn primary" onClick={addAdjustment} disabled={!adjDelta || Number(adjDelta) === 0}>
+            反映
+          </button>
+          <span className="pill">反映先: 現在局の直前（afterKyokuIndex={(m.logs ?? []).length}）</span>
+        </div>
+
+        <hr />
+        <h3>修正履歴</h3>
+        {(m.adjustments ?? []).length === 0 && <div className="small">まだありません。</div>}
+        {(m.adjustments ?? []).slice().reverse().map((a) => (
+          <div key={a.id} className="card historyItem">
+            <div className="kv">
+              <div style={{ fontWeight: 700 }}>
+                {windNames[a.seat]} {seatDisplayNames[a.seat]}：{a.delta > 0 ? "+" : ""}{a.delta}
+              </div>
+              <div className="small">{a.reason ?? ""}</div>
+            </div>
+            <div className="small">挿入位置: {a.afterKyokuIndex}局目の後</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)}
       </div>
     </div>
   );
