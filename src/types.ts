@@ -108,6 +108,9 @@ export type Session = {
 
   ended: boolean;
   endReason?: string;
+
+  phase?: "seatSelect" | "match" | "end" | "closed";
+currentMatchId?: string;
 };
 
 // -------------------- Match（半荘） --------------------

@@ -1,5 +1,11 @@
-import React, { useMemo, useState, useEffect } from "react";
-import { loadPlayers, savePlayers, loadSessions, upsertSession, deleteSession, subscribePlayers, subscribeSessions } from "./storage";
+import React, { useMemo, useState, useEffect, useRef } from "react";
+import {
+  savePlayers,
+  upsertSession,
+  deleteSession,
+  subscribePlayers,
+  subscribeSessions,
+} from "./storage";
 import type { Match, Player, Session, Rules, WindSeat } from "./types";
 import { uid, recomputeMatchFromScratch } from "./logic/mahjong";
 
@@ -11,15 +17,13 @@ import MatchEndPage from "./pages/MatchEndPage";
 import StatsPage from "./pages/StatsPage";
 import SettingsPage from "./pages/SettingsPage";
 
-import { getRoomId, setRoomId, getNick, setNick } from "./roomLocal";
+import { getRoomId, getNick } from "./roomLocal";
 
 type Route =
   | { name: "home" }
   | { name: "players" }
   | { name: "newSession" }
-  | { name: "seatSelect"; sessionId: string }
-  | { name: "match"; sessionId: string; matchId: string }
-  | { name: "end"; sessionId: string; matchId: string }
+  | { name: "session"; sessionId: string }
   | { name: "stats" }
   | { name: "settings" };
 
@@ -34,88 +38,127 @@ function todayDateKey(): string {
 }
 
 export default function App() {
-
   const [route, setRoute] = useState<Route>({ name: "home" });
   const [players, setPlayers] = useState<Player[]>([]);
-const [sessions, setSessions] = useState<Session[]>([]);
-const [roomId, setRoomIdState] = useState<string>(() => getRoomId());
-const [nick, setNickState] = useState<string>(() => getNick());
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [roomId, setRoomIdState] = useState<string>(() => getRoomId());
+  const [nick, setNickState] = useState<string>(() => getNick());
 
-// 初回にPlayersをクラウドから読む（roomIdが入ってる前提）
-useEffect(() => {
-  const unsubP = subscribePlayers(roomId, (p) => setPlayers(p));
-  return () => unsubP();
-}, [roomId]);
+  const sessionsRef = useRef<Session[]>([]);
+  const playersRef = useRef<Player[]>([]);
 
-useEffect(() => {
-  const unsubS = subscribeSessions(roomId, (s) => setSessions(s));
-  return () => unsubS();
-}, [roomId]);
+  useEffect(() => {
+    sessionsRef.current = sessions;
+  }, [sessions]);
+
+  useEffect(() => {
+    playersRef.current = players;
+  }, [players]);
+
+  useEffect(() => {
+    const unsubP = subscribePlayers(roomId, (p) => setPlayers(p));
+    return () => unsubP();
+  }, [roomId]);
+
+  useEffect(() => {
+    const unsubS = subscribeSessions(roomId, (s) => setSessions(s));
+    return () => unsubS();
+  }, [roomId]);
 
   function nav(r: Route) {
     setRoute(r);
   }
 
   async function persistPlayers(next: Player[]) {
-  setPlayers(next);
-  await savePlayers(next);
+    setPlayers(next);
+    playersRef.current = next;
+    await savePlayers(next);
+  }
+
+async function persistSession(next: Session) {
+  setSessions((prev) => {
+    const exists = prev.some((s) => s.id === next.id);
+    const nextList = exists
+      ? prev.map((s) => (s.id === next.id ? next : s))
+      : [next, ...prev];
+
+    sessionsRef.current = nextList;
+    return nextList;
+  });
+
+  try {
+    await upsertSession(next);
+    console.log("[persistSession] saved", next.id);
+  } catch (e) {
+    console.error("[persistSession] save failed", e);
+  }
 }
 
-  async function persistSession(next: Session) {
-  const exists = sessions.some((s) => s.id === next.id);
-  const list = exists ? sessions.map((s) => (s.id === next.id ? next : s)) : [next, ...sessions];
-  setSessions(list);
-  await upsertSession(next);
-}
+  async function removeSession(sessionId: string) {
+  setSessions((prev) => {
+    const nextList = prev.filter((s) => s.id !== sessionId);
+    sessionsRef.current = nextList;
+    return nextList;
+  });
 
-async function removeSession(sessionId: string) {
-  setSessions(sessions.filter((s) => s.id !== sessionId));
   await deleteSession(sessionId);
-  if ("sessionId" in route && (route as any).sessionId === sessionId) {
+
+  if (route.name === "session" && route.sessionId === sessionId) {
     setRoute({ name: "home" });
   }
 }
 
   const activeSession = useMemo(() => {
-    if ("sessionId" in route) {
-      return sessions.find((s) => s.id === (route as any).sessionId) ?? null;
-    }
-    return null;
+    if (route.name !== "session") return null;
+    return sessions.find((s) => s.id === route.sessionId) ?? null;
   }, [route, sessions]);
 
   const activeMatch = useMemo(() => {
-    if ((route.name === "match" || route.name === "end") && activeSession) {
-      return activeSession.games.find((g) => g.id === route.matchId) ?? null;
+    if (!activeSession) return null;
+    const currentMatchId = activeSession.currentMatchId;
+    if (!currentMatchId) return null;
+    return (activeSession.games ?? []).find((g) => g.id === currentMatchId) ?? null;
+  }, [activeSession]);
+
+  // 共有された phase に応じて、session 画面を開いている端末は自動で同じ画面に揃う
+  useEffect(() => {
+    if (route.name !== "session") return;
+    if (!activeSession) return;
+
+    if (activeSession.phase === "closed" || activeSession.ended) {
+      setRoute({ name: "home" });
     }
-    return null;
   }, [route, activeSession]);
 
-  // -------------------- create session --------------------
-  function createSession(payload: { participantIds: string[]; participantNames: string[]; rules: Rules }) {
+  function createSession(payload: {
+    participantIds: string[];
+    participantNames: string[];
+    rules: Rules;
+  }) {
     const s: Session = {
-      id: uid("session"),
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      dateKey: todayDateKey(),
-      rules: payload.rules,
-      participantIds: payload.participantIds,
-      participantNames: payload.participantNames,
-      games: [],
-      ended: false,
-    };
-    persistSession(s);
-    setRoute({ name: "seatSelect", sessionId: s.id });
+  id: uid("session"),
+  createdAt: Date.now(),
+  updatedAt: Date.now(),
+  dateKey: todayDateKey(),
+  rules: payload.rules,
+  participantIds: payload.participantIds,
+  participantNames: payload.participantNames,
+  games: [],
+  ended: false,
+  phase: "seatSelect",
+};
+
+    void persistSession(s);
+    setRoute({ name: "session", sessionId: s.id });
   }
 
-  // -------------------- create match in session --------------------
   function createMatchInSession(sessionId: string, seats: PlayerIdBySeat) {
-    const s = sessions.find((x) => x.id === sessionId);
+    const s = sessionsRef.current.find((x) => x.id === sessionId);
     if (!s) return;
 
     const gm = s.rules.gameMode;
-
     const sp = Number(s.rules.startPoints ?? 25000);
-    // 3麻は北を0点（欠け）にして、順位判定などで混ざらないようにする
+
     const initScores =
       gm === "sanma" ? ([sp, sp, sp, 0] as number[]) : ([sp, sp, sp, sp] as number[]);
 
@@ -123,8 +166,8 @@ async function removeSession(sessionId: string) {
       id: uid("match"),
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      seats: seats.ids, // 3麻は [E,S,W,""]
-      seatNames: seats.names, // 3麻は [..,"欠け"]
+      seats: seats.ids,
+      seatNames: seats.names,
       kichyaSeat: 0,
       initialScores: [...initScores],
       logs: [],
@@ -135,72 +178,121 @@ async function removeSession(sessionId: string) {
       currentScores: [...initScores],
       ended: false,
       tobiRule: s.rules?.tobiRule,
-      // ★ match.rules にセッションルールをコピー（mahjong.ts が参照）
       rules: {
         gameMode: s.rules.gameMode,
         startPoints: s.rules.startPoints,
         returnPoints: s.rules.returnPoints,
         tobiRule: s.rules.tobiRule,
-        // 3麻/4人3麻 共通パラメータ（概要書に合わせる）
         notenTotal: 2000,
         honbaUnit: 1000,
       },
     };
 
     const nextSession: Session = {
-      ...s,
-      updatedAt: Date.now(),
-      games: [...s.games, match],
-      ended: false,
-      endReason: undefined,
-    };
+  ...s,
+  updatedAt: Date.now(),
+  games: [...(s.games ?? []), match],
+  ended: false,
+  phase: "match",
+  currentMatchId: match.id,
+};
+delete (nextSession as any).endReason;
 
-    persistSession(nextSession);
-    setRoute({ name: "match", sessionId: s.id, matchId: match.id });
+    void persistSession(nextSession);
   }
 
-  // -------------------- update match inside session --------------------
-  function persistMatchInSession(sessionId: string, nextMatch: Match) {
-    const s = sessions.find((x) => x.id === sessionId);
-    if (!s) return;
+  async function persistMatchInSession(sessionId: string, nextMatch: Match) {
+  const s = sessionsRef.current.find((x) => x.id === sessionId);
+  if (!s) return;
 
-    const games = s.games.map((g) => (g.id === nextMatch.id ? nextMatch : g));
-    const nextSession: Session = { ...s, updatedAt: Date.now(), games };
-    persistSession(nextSession);
-  }
+  const games = (s.games ?? []).map((g) => (g.id === nextMatch.id ? nextMatch : g));
+
+  const nextSession: Session = {
+    ...s,
+    updatedAt: Date.now(),
+    games,
+    currentMatchId: s.currentMatchId ?? nextMatch.id,
+  };
+
+  await persistSession(nextSession);
+}
 
   function updateMatchRecomputed(sessionId: string, m: Match) {
     const recomputed = recomputeMatchFromScratch(m);
-    persistMatchInSession(sessionId, recomputed);
+    void persistMatchInSession(sessionId, recomputed);
     return recomputed;
   }
 
-  function endSession(sessionId: string) {
-    const s = sessions.find((x) => x.id === sessionId);
+  async function goToEnd(sessionId: string) {
+    const s = sessionsRef.current.find((x) => x.id === sessionId);
     if (!s) return;
-    const next: Session = { ...s, updatedAt: Date.now(), ended: true, endReason: "対局終了" };
-    persistSession(next);
+
+    const currentMatchId = s.currentMatchId;
+    if (!currentMatchId) return;
+
+    const games = (s.games ?? []).map((g) =>
+      g.id === currentMatchId ? { ...g, ended: true, updatedAt: Date.now() } : g
+    );
+
+    const nextSession: Session = {
+      ...s,
+      updatedAt: Date.now(),
+      games,
+      phase: "end",
+      currentMatchId,
+    };
+
+    await persistSession(nextSession);
+  }
+
+  async function goToMatch(sessionId: string, matchId: string) {
+    const s = sessionsRef.current.find((x) => x.id === sessionId);
+    if (!s) return;
+
+    const nextSession: Session = {
+      ...s,
+      updatedAt: Date.now(),
+      phase: "match",
+      currentMatchId: matchId,
+    };
+
+    await persistSession(nextSession);
+  }
+
+  async function goToSeatSelect(sessionId: string) {
+    const s = sessionsRef.current.find((x) => x.id === sessionId);
+    if (!s) return;
+
+    const nextSession: Session = {
+      ...s,
+      updatedAt: Date.now(),
+      phase: "seatSelect",
+      currentMatchId: undefined,
+    };
+
+    await persistSession(nextSession);
+  }
+
+  async function endSession(sessionId: string) {
+    const s = sessionsRef.current.find((x) => x.id === sessionId);
+    if (!s) return;
+
+   const next: Session = {
+  ...s,
+  updatedAt: Date.now(),
+  ended: true,
+  endReason: "対局終了",
+  phase: "closed",
+};
+
+    await persistSession(next);
     setRoute({ name: "home" });
   }
 
-  // ★④対策：ホームから「開く」で直前のゲームに復帰する
-  function getResumeRoute(s: Session): Route {
-    const games = s.games ?? [];
-    if (games.length === 0) return { name: "seatSelect", sessionId: s.id };
-
-    // 最後に更新されたゲームを優先して再開
-    const last = games
-      .slice()
-      .sort((a, b) => (b.updatedAt ?? b.createdAt ?? 0) - (a.updatedAt ?? a.createdAt ?? 0))[0];
-
-    if (!last) return { name: "seatSelect", sessionId: s.id };
-
-    return last.ended
-      ? { name: "end", sessionId: s.id, matchId: last.id }
-      : { name: "match", sessionId: s.id, matchId: last.id };
-  }
-
-  const matchesForStats = useMemo(() => sessions.flatMap((s) => s.games ?? []), [sessions]);
+  const matchesForStats = useMemo(
+    () => sessions.flatMap((s) => s.games ?? []),
+    [sessions]
+  );
 
   return (
     <div className="container">
@@ -211,18 +303,22 @@ async function removeSession(sessionId: string) {
           onPlayers={() => nav({ name: "players" })}
           onNewSession={() => nav({ name: "newSession" })}
           onOpenSession={(id) => {
-            const s = sessions.find((x) => x.id === id);
-            if (!s) return;
-            nav(getResumeRoute(s));
+            nav({ name: "session", sessionId: id });
           }}
-          onDeleteSession={(id) => removeSession(id)}
+          onDeleteSession={(id) => {
+            void removeSession(id);
+          }}
           onStats={() => nav({ name: "stats" })}
           onSettings={() => nav({ name: "settings" })}
         />
       )}
 
       {route.name === "players" && (
-        <PlayersPage players={players} onBack={() => nav({ name: "home" })} onSave={persistPlayers} />
+        <PlayersPage
+          players={players}
+          onBack={() => nav({ name: "home" })}
+          onSave={persistPlayers}
+        />
       )}
 
       {route.name === "newSession" && (
@@ -234,54 +330,76 @@ async function removeSession(sessionId: string) {
         />
       )}
 
-      {route.name === "seatSelect" && activeSession && (
-        <NewMatchPage
-          mode="seatSelect"
-          players={players}
-          session={activeSession}
-          onBack={() => nav({ name: "home" })}
-          onCreateMatch={(seats) => createMatchInSession(activeSession.id, seats)}
-        />
-      )}
+      {route.name === "session" &&
+        activeSession &&
+        activeSession.phase === "seatSelect" && (
+          <NewMatchPage
+            mode="seatSelect"
+            players={players}
+            session={activeSession}
+            onBack={() => nav({ name: "home" })}
+            onCreateMatch={(seats) => createMatchInSession(activeSession.id, seats)}
+          />
+        )}
 
-      {route.name === "match" && activeSession && activeMatch && (
-        <MatchPage
-          players={players}
-          match={activeMatch}
-          onBack={() => nav({ name: "home" })}
-          onPersist={(m) => persistMatchInSession(activeSession.id, m)}
-          onEnd={() => nav({ name: "end", sessionId: activeSession.id, matchId: activeMatch.id })}
-          onRecompute={(m) => updateMatchRecomputed(activeSession.id, m)}
-        />
-      )}
+      {route.name === "session" &&
+        activeSession &&
+        activeSession.phase === "match" &&
+        activeMatch && (
+          <MatchPage
+            players={players}
+            match={activeMatch}
+            onBack={() => nav({ name: "home" })}
+            onPersist={(m) => persistMatchInSession(activeSession.id, m)}
+            onEnd={() => {
+              void goToEnd(activeSession.id);
+            }}
+            onRecompute={(m) => updateMatchRecomputed(activeSession.id, m)}
+          />
+        )}
 
-      {route.name === "end" && activeSession && activeMatch && (
-        <MatchEndPage
-          players={players}
-          session={activeSession}
-          match={activeMatch}
-          onBackHome={() => nav({ name: "home" })}
-          onEdit={() => nav({ name: "match", sessionId: activeSession.id, matchId: activeMatch.id })}
-          onNextGame={() => nav({ name: "seatSelect", sessionId: activeSession.id })}
-          onEndSession={() => endSession(activeSession.id)}
-          onDeleteSession={() => removeSession(activeSession.id)}
-          onStats={() => nav({ name: "stats" })}
-        />
-      )}
+      {route.name === "session" &&
+        activeSession &&
+        activeSession.phase === "end" &&
+        activeMatch && (
+          <MatchEndPage
+            players={players}
+            session={activeSession}
+            match={activeMatch}
+            onBackHome={() => nav({ name: "home" })}
+            onEdit={() => {
+              void goToMatch(activeSession.id, activeMatch.id);
+            }}
+            onNextGame={() => {
+              void goToSeatSelect(activeSession.id);
+            }}
+            onEndSession={() => {
+              void endSession(activeSession.id);
+            }}
+            onDeleteSession={() => {
+              void removeSession(activeSession.id);
+            }}
+            onStats={() => nav({ name: "stats" })}
+          />
+        )}
 
       {route.name === "stats" && (
-        <StatsPage matches={matchesForStats} players={players} onBack={() => nav({ name: "home" })} />
+        <StatsPage
+          matches={matchesForStats}
+          players={players}
+          onBack={() => nav({ name: "home" })}
+        />
       )}
 
       {route.name === "settings" && (
-  <SettingsPage
-    onBack={() => nav({ name: "home" })}
-    onApply={(r, n) => {
-      setRoomIdState(r);
-      setNickState(n);
-    }}
-  />
-)}
+        <SettingsPage
+          onBack={() => nav({ name: "home" })}
+          onApply={(r, n) => {
+            setRoomIdState(r);
+            setNickState(n);
+          }}
+        />
+      )}
     </div>
   );
 }
